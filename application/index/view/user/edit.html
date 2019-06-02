@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/header" title="edit user info" /}
+</head>
+<body>
+<div class="layui-container app-body" style="margin-top: 10px;background: #ffffff;">
+    <div style="height: 20px;"></div>
+    <form class="layui-form layui-form-pane" action="">
+        <div class="layui-form-item">
+            <label class="layui-form-label">nickname</label>
+            <div class="layui-input-inline">
+                <input type="text" name="nickname" lay-verify="nickname" autocomplete="off" class="layui-input" value="{$user.nickname}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">password</label>
+            <div class="layui-input-inline">
+                <input type="text" name="password" lay-verify="password" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div style="width: 100px;float: left;padding-right: 15px;">
+                <input type="hidden" id="avatar" name="avatar" value="">
+                <input type="hidden" name="id" value="{$user.id}">
+                <img height="100" width="100" id="my_avatar" src="{if $user.avatar==''}/static/images/avatar.jpg{else /}{$user.avatar}{/if}" />
+            </div>
+            <div style="float: left;padding-top: 50px;">
+                <button type="button" class="layui-form-label" id="upload_avatar">
+                    <i class="layui-icon">&#xe67c;</i>Select file
+                </button>
+            </div>
+        </div>
+
+        <div class="layui-form-item" style="margin-top: 20px;">
+            <button class="layui-btn" lay-submit="" lay-filter="edit" style="width: 100%;">save</button>
+        </div>
+    </form>
+    <div style="height: 20px;"></div>
+</div>
+
+<script>
+    layui.use(['layer','form','upload'],function () {
+        var layer = layui.layer
+            , form = layui.form
+            , upload = layui.upload
+            , $ = layui.$;
+
+        // 上传幻灯片图片
+        upload.render({
+            elem: '#upload_avatar' //绑定元素
+            ,url: "/index/upload/file" //上传接口
+            , before: function (obj) { //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
+                layer.load(); //上传loading
+            }
+            ,done: function(res){
+                console.log(res);
+                //上传完毕回调
+                if (res.code === 0) {
+                    layer.msg('上传成功',{icon:1});
+                    $('#avatar').val(res.data.url); // 显示上传之后的url
+                    document.getElementById('my_avatar').src = res.data.url;
+                    layer.closeAll();
+                } else {
+                    layer.msg('上传失败',{icon:2});
+                }
+            }
+            ,error: function(res){
+                layer.msg('上传异常',{icon:2});
+            }
+        });
+
+        form.on('submit(edit)',function (data) {
+            var url = "/index/user/update";
+            $.post(url,data.field,function (result) {
+                if(result.code === 0){
+                    layer.msg(result.message,{icon:1});
+                    var index = parent.layer.getFrameIndex(window.name); // 获得frame索引
+                    parent.layer.close(index);  //关闭当前frame
+                }else{
+                    layer.msg(result.message,{icon:2});
+                }
+            });
+            return false; // 阻止表单跳转
+        });
+
+    });
+
+</script>
+{include file="public/footer" /}
+</body>
+</html>

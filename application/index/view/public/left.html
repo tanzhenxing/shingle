@@ -1,0 +1,42 @@
+<div class="layui-side layui-side-menu">
+    <div class="layui-side-scroll">
+        <div class="layui-logo" lay-href="home/console.html">
+            <span>{$site.title}</span>
+        </div>
+
+        <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
+            <li data-name="home" class="layui-nav-item layui-nav-itemed">
+                <a href="javascript:;" lay-tips="Home" lay-direction="2">
+                    <i class="layui-icon layui-icon-home"></i>
+                    <cite>Home</cite>
+                </a>
+            </li>
+            <li data-name="senior" class="layui-nav-item">
+                <a lay-href="{:url('admin/Message/index')}" lay-tips="Subject List" lay-direction="2">
+                    <i class="layui-icon layui-icon-senior"></i>
+                    <cite>Subject List</cite>
+                </a>
+            </li>
+            <li data-name="set" class="layui-nav-item">
+                <a href="javascript:;" lay-tips="System Manage" lay-direction="2">
+                    <i class="layui-icon layui-icon-set"></i>
+                    <cite>System Manage</cite>
+                </a>
+                <dl class="layui-nav-child">
+                    <dd>
+                        <a lay-href="{:url('index/user/member')}">User List</a>
+                    </dd>
+                    <dd>
+                        <a lay-href="{:url('index/User/admin')}">Admin List</a>
+                    </dd>
+                    <dd>
+                        <a lay-href="{:url('index/Site/edit')}">Site Info</a>
+                    </dd>
+                    <dd>
+                        <a lay-href="{:url('index/Cos/edit')}">COS Config</a>
+                    </dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+</div>

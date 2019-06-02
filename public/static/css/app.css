@@ -1,0 +1,147 @@
+body {
+    background: #f2f2f2;
+}
+.app-body {
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    position: relative;
+    background: #0e90d2;
+}
+.app-content {
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    position: relative;
+    background: #ffffff;
+}
+.app-top {
+    background: #0e90d2;
+    height: 50px;
+    line-height: 50px;
+}
+.app-top-home {
+    color: #ffffff;
+    font-size: 20px;
+}
+.app-top-menu {
+    color: #ffffff;
+    font-size: 20px;
+    float: right;
+}
+.app-top-title {
+    color: #ffffff;
+    font-size: 22px;
+    text-align: center;
+}
+
+.app-footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+    z-index: 1010;
+    background: #0e90d2;
+    text-align: center;
+    color: #ffffff;
+}
+
+.link-color-orange a {
+    color: #FFB800;
+}
+.link-color a {
+    color: #ffffff;
+}
+
+.app-nav-icon {
+    width: 26px;
+    height: 25px;
+    margin: 4px auto 0;
+    display: block;
+    line-height: 25px;
+    font-size: 20px;
+}
+
+.app-nav-title {
+    padding-top: 2px;
+    line-height: 1;
+    font-size: 12px;
+    display: block;
+    word-wrap: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.app-top-icon {
+    width: 28px;
+    height: 28px;
+}
+.app-top-icon img {
+    margin-bottom: 2px;
+}
+
+.app-row10 {
+    height: 10px;
+}
+.app-top-left {
+    font-size: 18px;
+    color: #ffffff;
+    line-height: 50px;
+}
+.app-top-left a {
+    color: #ffffff;
+}
+
+.app-top-right {
+    font-size: 18px;
+    color: #ffffff;
+    line-height: 50px;
+    text-align: right;
+}
+
+.app-top-right a {
+    color: #ffffff;
+}
+
+.content-title {
+    width: 100%;
+    height: auto;
+    text-align: center;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background: #ffffff;
+}
+
+.content-title > div {
+    width: 100%;
+    height: auto;
+}
+
+.content-title > div > ul {
+    display: inline-block;
+    width: 45%;
+    height: 160px;
+}
+
+.content-title > div > ul > li {
+    margin-top: 10px;
+}
+
+.content-title > div > ul:hover {
+    box-shadow: 0 0 10px #3387dd;
+    border-radius: 3px;
+}
+
+.content-title > div > ul > li:nth-child(2) {
+    color: #373e41;
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 15px;
+}
+
+.content-title > div > ul > li:nth-child(3) {
+    color: #a0a0a0;
+    font-size: 12px;
+    margin-top: 10px;
+}
