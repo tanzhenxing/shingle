@@ -1,10 +1,111 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    {include file="public/header" title="create user" /}
 </head>
 <body>
+<div class="layui-container app-body" style="margin-top: 10px;background: #ffffff;">
+    <div style="height: 20px;"></div>
+    <form class="layui-form layui-form-pane" action="">
+        <div class="layui-form-item">
+            <label class="layui-form-label">To User</label>
+            <div class="layui-input-inline">
+                <select name="to_user_id" lay-verify="required">
+                    <option value="1">us</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">title</label>
+            <div class="layui-input-block">
+                <input type="text" name="title" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">content</label>
+            <div class="layui-input-block">
+                <textarea id="content" name="content" style="display: none;"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div style="width: 100px;float: left;padding-right: 15px;">
+                <input type="hidden" id="avatar" name="avatar" value="">
+                <img height="100" width="100" id="my_avatar" src="/static/images/avatar.jpg" />
+            </div>
+            <div style="float: left;padding-top: 50px;">
+                <button type="button" class="layui-form-label" id="upload_avatar">
+                    <i class="layui-icon">&#xe67c;</i>Select file
+                </button>
+            </div>
+        </div>
 
+        <div class="layui-form-item" style="margin-top: 20px;">
+            <button class="layui-btn" lay-submit="" lay-filter="create" style="width: 100%;">Send</button>
+        </div>
+    </form>
+    <div style="height: 20px;"></div>
+</div>
+
+<script>
+    layui.use(['layer','form','upload','layedit'],function () {
+        var layer = layui.layer
+            , form = layui.form
+            , upload = layui.upload
+            , layedit = layui.layedit
+            , $ = layui.$;
+
+        //建立编辑器
+        layedit.set({
+            uploadImage: {
+                url: '/index/upload/img' //接口url
+                ,type: 'post' //默认post
+            }
+        });
+        var my_edit = layedit.build('content');
+
+        // 上传幻灯片图片
+        upload.render({
+            elem: '#upload_avatar' //绑定元素
+            ,url: "/index/upload/file" //上传接口
+            , before: function (obj) { //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
+                layer.load(); //上传loading
+            }
+            ,done: function(res){
+                console.log(res);
+                //上传完毕回调
+                if (res.code === 0) {
+                    layer.msg('上传成功',{icon:1});
+                    $('#avatar').val(res.data.url); // 显示上传之后的url
+                    document.getElementById('my_avatar').src = res.data.url;
+                    layer.closeAll();
+                } else {
+                    layer.msg('上传失败',{icon:2});
+                }
+            }
+            ,error: function(res){
+                layer.msg('上传异常',{icon:2});
+            }
+        });
+
+        form.on('submit(create)',function (data) {
+            var url = "/index/message/save";
+            // 获取编辑器里的内容
+            data.field.content = layedit.getContent(my_edit);
+            $.post(url,data.field,function (result) {
+                if(result.code === 0){
+                    layer.msg(result.message,{icon:1});
+                    var index = parent.layer.getFrameIndex(window.name); // 获得frame索引
+                    parent.layer.close(index);  //关闭当前frame
+                }else{
+                    layer.msg(result.message,{icon:2});
+                }
+            });
+            return false; // 阻止表单跳转
+        });
+
+    });
+
+</script>
+{include file="public/footer" /}
 </body>
 </html>

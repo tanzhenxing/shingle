@@ -19,7 +19,7 @@ class Upload extends Base
      * 上传文件到本地服务器
      * @return array
      */
-    public static function file()
+    public function file()
     {
         // 获取表单上传文件 例如上传了001.jpg
         $file = request()->file('file');
@@ -42,6 +42,16 @@ class Upload extends Base
             // 上传失败获取错误信息
             $result = array('code'=>1,'message'=>$file->getError());
         }
+        return $result;
+    }
+
+    public function img()
+    {
+        $upload_file = $this->file();
+        if ($upload_file['code']) {
+            return $upload_file;
+        }
+        $result = array('code'=>0,'message'=>'上传成功','data'=>array('src'=>$upload_file['data']['url'],'title'=>''));
         return $result;
     }
 
@@ -92,7 +102,7 @@ class Upload extends Base
      * @param $extension
      * @return array
      */
-    public static function check($extension)
+    public function check($extension)
     {
         $file_extension = FileExtension::get(['status'=>1,'extension'=>$extension]);
         if (empty($file_extension)) {

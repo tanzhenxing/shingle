@@ -8,14 +8,19 @@ class Message extends Base
         return $this->fetch();
     }
 
+    /**
+     * 新增消息
+     * @return mixed
+     */
     public function create()
     {
-
+        return $this->fetch();
     }
 
     public function save()
     {
-
+        $post_data = $this->request->post();
+        dump($post_data);
     }
 
     public function edit($id)
