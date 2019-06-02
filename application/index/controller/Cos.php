@@ -1,14 +1,24 @@
 <?php
 namespace app\index\controller;
 
+use app\common\model\CosRegion;
+
 class Cos extends Base
 {
     /**
      * 编辑腾讯云存储配置信息
-     * @return mixed
+     * @return array|mixed
+     * @throws
      */
     public function edit()
     {
+        // 云存储地域信息
+        $cos_region_list = CosRegion::where(['status'=>1])->select();
+        if (empty($cos_region_list)) {
+            $result = array('code'=>1,'message'=>'腾讯云存储地域信息不存在');
+            return $result;
+        }
+        $this->assign('region',$cos_region_list);
         // 获取腾讯云存储配置信息
         $cos = new \app\common\model\Cos();
         $cos_info = $cos->get(['code'=>'tencent']);
@@ -17,6 +27,15 @@ class Cos extends Base
             return $result;
         }
         $this->assign('cos',$cos_info);
+
+        // 获取当前云存储所在地域
+        $my_region = CosRegion::get($cos_info['region_id']);
+        if (empty($my_region)) {
+            $result = array('code'=>1,'message'=>'腾讯云存储没有关联地域');
+            return $result;
+        }
+        $this->assign('my_region',$my_region);
+
         return $this->fetch();
     }
 

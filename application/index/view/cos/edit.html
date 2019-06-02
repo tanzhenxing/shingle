@@ -8,6 +8,17 @@
     <div style="height: 20px;"></div>
     <form class="layui-form layui-form-pane" action="">
         <div class="layui-form-item">
+            <label class="layui-form-label">region</label>
+            <div class="layui-input-inline">
+                <select name="region_id" lay-filter="region">
+                    <option value="{$my_region.id}">{$my_region.title}|{$my_region.short_name}|{$my_region.name}</option>
+                    {volist name="region" id="vo"}
+                    <option value="{$vo.id}">{$vo.title}|{$vo.short_name}|{$vo.name}</option>
+                    {/volist}
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
             <label class="layui-form-label">app_id</label>
             <div class="layui-input-inline">
                 <input type="text" name="app_id" autocomplete="off" class="layui-input" value="{$cos.app_id}">
