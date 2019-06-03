@@ -11,6 +11,13 @@ class Login extends Controller
      */
     public function index()
     {
+        // 获取网站信息
+        $site = \app\common\controller\Site::info();
+        if ($site['code']) {
+            return $site;
+        }
+        $this->assign('site',$site['data']);
+
         return $this->fetch();
     }
 
@@ -21,7 +28,7 @@ class Login extends Controller
     public function check()
     {
         $post_data = $this->request->post();
-        // $password = password_hash($post_data['password'],PASSWORD_BCRYPT);
+        // $password = password_hash($post_data['password'],PASSWORD_BCRYPT); // 密码加密方式
         // 检查用户名是否存在
         $user_info = \app\common\model\User::get(['username'=>$post_data['username']]);
         if(empty($user_info)) {

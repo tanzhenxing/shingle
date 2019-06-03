@@ -82,13 +82,22 @@ class User extends Base
      */
     public function save()
     {
+        // 接收post数据
         $post_data = $this->request->post();
+        // 验证post数据是否有效
+        $validate = new \app\index\validate\User();
+        if (!$validate->check($post_data)) {
+            $result = array('code'=>1,'message'=>$validate->getError());
+            return $result;
+        }
         $user = new \app\common\model\User();
         $get_user = $user->get(['username'=>$post_data['username']]);
         if (!empty($get_user)) {
             $result = array('code'=>1,'message'=>'username 已经存在');
             return $result;
         }
+        // 加密明文密码
+        $post_data['password'] = password_hash($post_data['password'],PASSWORD_BCRYPT);
         // 保存用户信息
         $save = $user->allowField(true)->save($post_data);
         if ($save) {
