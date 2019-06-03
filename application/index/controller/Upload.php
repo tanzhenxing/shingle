@@ -37,21 +37,11 @@ class Upload extends Base
         if($info){
             $file_path = '/upload/' . $info->getSaveName();
             $file_path = str_replace('\\','/',$file_path);
-            $result = array('code'=>0,'message'=>'success','data'=>array('url'=>$file_path));
+            $result = array('code'=>0,'message'=>'success','data'=>array('url'=>$file_path,'src'=>$file_path));
         } else {
             // 上传失败获取错误信息
             $result = array('code'=>1,'message'=>$file->getError());
         }
-        return $result;
-    }
-
-    public function img()
-    {
-        $upload_file = $this->file();
-        if ($upload_file['code']) {
-            return $upload_file;
-        }
-        $result = array('code'=>0,'message'=>'上传成功','data'=>array('src'=>$upload_file['data']['url'],'title'=>''));
         return $result;
     }
 

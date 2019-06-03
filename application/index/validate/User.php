@@ -16,7 +16,7 @@ class User extends Validate
 	    'username'=>'require|alphaDash|max:25',
         'nickname'=>'require|max:50',
         'password'=>'require|max:50',
-        'avatar'=>'require|url'
+        'avatar'=>'require'
     ];
     
     /**

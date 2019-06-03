@@ -98,6 +98,7 @@ class User extends Base
         }
         // 加密明文密码
         $post_data['password'] = password_hash($post_data['password'],PASSWORD_BCRYPT);
+        $post_data['status'] = 1;
         // 保存用户信息
         $save = $user->allowField(true)->save($post_data);
         if ($save) {

@@ -11,9 +11,8 @@ class Logout extends Base
     {
         // 注销session
         session('username',null);
-        // 返回结果
-        $result = array('code'=>0,'message'=>'success');
-        return json($result);
+        // 返回首页
+        $this->redirect('/');
     }
 
     /**

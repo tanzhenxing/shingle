@@ -11,7 +11,9 @@
             <label class="layui-form-label">To User</label>
             <div class="layui-input-inline">
                 <select name="to_user_id" lay-verify="required">
-                    <option value="1">us</option>
+                    {volist name="user" id="vo"}
+                    <option value="{$vo.id}">{$vo.username}</option>
+                    {/volist}
                 </select>
             </div>
         </div>
@@ -57,13 +59,13 @@
         //建立编辑器
         layedit.set({
             uploadImage: {
-                url: '/index/upload/img' //接口url
+                url: '/index/upload/file' //接口url
                 ,type: 'post' //默认post
             }
         });
         var my_edit = layedit.build('content');
 
-        // 上传幻灯片图片
+        // 上传图片
         upload.render({
             elem: '#upload_avatar' //绑定元素
             ,url: "/index/upload/file" //上传接口

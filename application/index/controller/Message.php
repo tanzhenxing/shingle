@@ -11,9 +11,20 @@ class Message extends Base
     /**
      * 新增消息
      * @return mixed
+     * @throws
      */
     public function create()
     {
+        // 获取用户信息
+        $session_username = session('username');
+        $user = \app\common\model\User::where(['status'=>1,'type'=>1])->select();
+        $user_array = array();
+        foreach ($user as $item) {
+            if ($item['username'] != $session_username) { // 从记录中去掉当前用户
+                $user_array[] = $item;
+            }
+        }
+        $this->assign('user',$user_array);
         return $this->fetch();
     }
 
