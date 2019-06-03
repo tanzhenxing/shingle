@@ -8,7 +8,7 @@ class CosKey extends Base
     /**
      * 计算临时密钥
      */
-    public function index()
+    public function info()
     {
         // 获取cos 配置信息
         $cos = \app\common\model\Cos::get(['code'=>'tencent']);
@@ -70,4 +70,14 @@ class CosKey extends Base
         return json($tempKeys);
     }
 
+    /**
+     * 空操作
+     * @return array
+     */
+    public function _empty()
+    {
+        $request_url = $this->request->domain() . $this->request->url();
+        $result = array('code'=>1, 'message'=>'访问的网址:[ ' . $request_url .' ] 不存在');
+        return json($result);
+    }
 }

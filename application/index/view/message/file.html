@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+    {include file="public/header" title="Upload Attached File" /}
+    <style>
+        a {
+            color: #0071ff;
+        }
+        .float-right {
+            float: right;
+        }
+        #form input[type="text"] {
+            width: 40px;
+            padding: 2px;
+            vertical-align: middle;
+        }
+        #form input[type="file"] {
+            vertical-align: middle;
+        }
+
+        .file-list {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .file-list {
+            width: 960px;
+            border-collapse: collapse;
+        }
+
+        .file-name {
+            display: inline-block;
+            width: 310px;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        .file-item td {
+            border: 1px solid #ccc;
+            padding: 5px 10px;
+            font-size: 12px;
+            line-height: 20px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        .file-progress {
+            position: relative;
+            display: inline-block;
+            width: 100px;
+            height: 6px;
+            background: #ddd;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+
+        .file-progress-loaded {
+            position: absolute;
+            display: inline-block;
+            height: 6px;
+            background: #0071ff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="layui-container app-body" style="margin-top: 10px;background: #ffffff;">
+    <div style="height: 20px;"></div>
+    <h1>Upload Attached File</h1>
+    <div style="height: 20px;"></div>
+    <div id="app">
+        <form id="form" class="layui-form layui-form-pane">
+            <div class="float-right">total {{total}} files</div>
+            <input type="file" value="Select file" multiple @change="selectedFile"  placeholder="Select file">
+        </form>
+        <table class="layui-table">
+            <colgroup>
+                <col style="width:20%;">
+                <col style="width:10%;">
+                <col style="width:40%;">
+                <col style="width:30%;">
+            </colgroup>
+            <tr class="file-item">
+                <td>filename</td>
+                <td>size</td>
+                <td>progress</td>
+                <td class="file-action">handle</td>
+            </tr>
+            <tr class="file-item" v-for="item in list">
+                <td><span class="file-name">{{item.Key}}</span></td>
+                <td>{{formatSize(item.size)}}</td>
+                <td>
+                    <span class="file-progress" v-if="item.state==='uploading'">
+                        <span class="file-progress-loaded" :style="'width:'+item.percent*100+'%'"></span>
+                    </span>
+                    <span v-if="item.state==='success'">success</span>
+                    <span v-else-if="item.state==='waiting'">waiting</span>
+                    <span v-else-if="item.state==='checking'">checking({{parseInt(item.hashPercent*100)}}%)</span>
+                    <span v-else-if="item.state==='paused'">paused, upload{{formatSize(item.loaded)}}</span>
+                    <span v-else-if="item.state==='canceled'">canceled</span>
+                    <span v-else>{{formatSize(item.speed)}}/s, upload{{formatSize(item.loaded)}} {{parseInt(item.percent*100)}}%</span>
+                </td>
+                <td class="file-action">
+                    <a v-if="['waiting','checking','uploading'].includes(item.state)" href="javascript:void(0)" @click="pauseTask(item)">paused</a>
+                    <a v-if="['error','paused'].includes(item.state)" href="javascript:void(0)" @click="restartTask(item)">start</a>
+                    <a v-if="item.state!=='canceled'" href="javascript:void(0)" @click="cancelTask(item)">delete</a>
+                </td>
+            </tr>
+            <tr class="file-item" v-if="!list.length">
+                <td colspan="4" align="center">no files</td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="height: 20px;"></div>
+</div>
+
+<script src="/cos-js-sdk-v5/dist/cos-js-sdk-v5.js"></script>
+<script src="/cos-js-sdk-v5/demo/common/lodash.core.min.js"></script>
+<script src="/cos-js-sdk-v5/demo/common/vue.min.js"></script>
+<script>
+    var Bucket = '{$cos.bucket}';
+    var Region = '{$cos.region_name}';
+
+    var cos = new COS({
+        FileParallelLimit: 5,
+        ChunkParallelLimit: 5,
+        ChunkMbSize: 8 * 1024 * 1024,
+        getAuthorization: function (options, callback) {
+            var url = '/index/cos_key/info';
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.onload = function (e) {
+                try {
+                    var data = JSON.parse(e.target.responseText);
+                } catch (e) {
+                }
+                callback({
+                    TmpSecretId: data.credentials && data.credentials.tmpSecretId,
+                    TmpSecretKey: data.credentials && data.credentials.tmpSecretKey,
+                    XCosSecurityToken: data.credentials && data.credentials.sessionToken,
+                    ExpiredTime: data.expiredTime
+                });
+            };
+            xhr.send();
+        }
+    });
+
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                FileParallelLimit: 5,
+                ChunkParallelLimit: 16,
+                ChunkMbSize: 2,
+                list: [],
+                total: 0,
+            };
+        },
+        created: function () {
+            var self = this;
+            cos.on('list-update', function (data) {
+                self.list = data.list;
+                self.total = data.list.length;
+            });
+        },
+        methods: {
+            formatSize: function (size) {
+                var i, unit = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+                for (i = 0; i < unit.length && size >= 1024; i++) {
+                    size /= 1024;
+                }
+                return (Math.round(size * 100) / 100 || 0) + unit[i];
+            },
+            selectedFile: function (e) {
+                var files = e.target.files;
+                var list = [].map.call(files, function (f) {
+                    var myDate = new Date();
+                    var year = myDate.getFullYear();
+                    var month = myDate.getMonth()+1;
+                    var day = myDate.getDate();
+                    var time = myDate.getTime();
+                    var filename = Math.ceil(Math.random()*10000) + time;
+                    return {
+                        Bucket: Bucket,
+                        Region: Region,
+                        Key: 'files/' + year + '/' + month + '/' + day + '/' + filename + f.name,
+                        Body: f,
+                    };
+                });
+                cos.uploadFiles({files: list});
+                document.getElementById('form').reset();
+            },
+            pauseTask: function (task) {
+                cos.pauseTask(task.id);
+            },
+            restartTask: function (task) {
+                cos.restartTask(task.id);
+            },
+            cancelTask: function (task) {
+                cos.cancelTask(task.id);
+            },
+        },
+    });
+
+</script>
+
+</body>
+</html>

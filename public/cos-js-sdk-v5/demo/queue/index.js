@@ -6,7 +6,7 @@ var cos = new COS({
     ChunkParallelLimit: 5,
     ChunkMbSize: 8 * 1024 * 1024,
     getAuthorization: function (options, callback) {
-        var url = '../../server/sts.php';
+        var url = '/index/cos_key/info';
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.onload = function (e) {
@@ -54,10 +54,16 @@ new Vue({
         selectedFile: function (e) {
             var files = e.target.files;
             var list = [].map.call(files, function (f) {
+                var myDate = new Date();
+                var year = myDate.getFullYear();
+                var month = myDate.getMonth()+1;
+                var day = myDate.getDate();
+                var time = myDate.getTime();
+                var filename = Math.ceil(Math.random()*10000) + time;
                 return {
                     Bucket: Bucket,
                     Region: Region,
-                    Key: f.name,
+                    Key: 'files/' + year + '/' + month + '/' + day + '/' + filename + f.name,
                     Body: f,
                 };
             });

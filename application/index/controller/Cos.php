@@ -65,6 +65,33 @@ class Cos extends Base
     }
 
     /**
+     * 获取云存储信息
+     * @return array
+     */
+    public static function get()
+    {
+        // 获取cos 配置信息
+        $cos = \app\common\model\Cos::get(['code'=>'tencent']);
+        if (empty($cos)) {
+            $result = array('code'=>1,'message'=>'cos 配置信息不存在');
+            return $result;
+        }
+        $app_id = $cos['app_id'];
+        $bucket_name = $cos['bucket_name'];
+        $bucket = $bucket_name . '-' . $app_id;
+        $cos['bucket'] = $bucket;
+        $region_id = $cos['region_id'];
+        // 获取cos 地域信息
+        $cos_region = CosRegion::get($region_id);
+        if (empty($cos_region)) {
+            $result = array('code'=>1,'message'=>'cos 地域信息不存在');
+            return $result;
+        }
+        $result = array('code'=>0,'message'=>'success','data'=>array('cos'=>$cos,'region'=>$cos_region));
+        return $result;
+    }
+
+    /**
      * 空操作
      * @return array
      */
