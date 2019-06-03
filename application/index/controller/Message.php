@@ -2,6 +2,7 @@
 namespace app\index\controller;
 
 use app\common\model\CosRegion;
+use app\common\model\MessageReply;
 
 class Message extends Base
 {
@@ -151,15 +152,14 @@ class Message extends Base
         return $result;
     }
 
+    /**
+     * 编辑消息
+     * @param $id
+     * @return array|mixed
+     * @throws
+     */
     public function edit($id)
     {
-        $message = \app\common\model\Message::get($id);
-        if (empty($message)) {
-            $result = array('code'=>1,'message'=>'message not exits');
-            return $result;
-        }
-        $this->assign('message',$message);
-
         // 获取cos 配置信息
         $cos = \app\common\model\Cos::get(['code'=>'tencent']);
         if (empty($cos)) {
@@ -177,14 +177,148 @@ class Message extends Base
             $result = array('code'=>1,'message'=>'cos 地域信息不存在');
             return $result;
         }
+        // $xml_domain = $cos_region['xml_domain'];
+        $json_domain = $cos_region['json_domain'];
+
         $cos['region_name'] = $cos_region['name'];
         $this->assign('cos',$cos);
+
+        $message = \app\common\model\Message::get($id);
+        if (empty($message)) {
+            $result = array('code'=>1,'message'=>'message not exits');
+            return $result;
+        }
+        $this->assign('message',$message);
+
+        // 当前登录的用户
+        $session_username = session('username');
+        $user = \app\common\model\User::get(['username'=>$session_username]);
+        if (empty($user)) {
+            $result = array('code'=>1,'message'=>'user_id not exits');
+            return $result;
+        }
+        $this->assign('user',$user);
+
+        // 发送人信息
+        $send_user = \app\common\model\User::get($message['user_id']);
+        if (empty($send_user)) {
+            $result = array('code'=>1,'message'=>'user_id not exits');
+            return $result;
+        }
+        $this->assign('send_user',$send_user);
+
+        // 获取接收人信息
+        $to_user = \app\common\model\User::get($message['to_user_id']);
+        if (empty($to_user)) {
+            $result = array('code'=>1,'message'=>'to_user_id not exits');
+            return $result;
+        }
+        $this->assign('to_user',$to_user);
+        // 获取消息附件
+        $files_array = array();
+        $message_file = \app\common\model\MessageFile::where(['message_id'=>$message['id'],'status'=>1])->order('sort desc')->select();
+        if (!empty($message_file)) {
+            foreach ($message_file as $item) {
+                $file_id = $item['file_id'];
+                $cos_file = \app\common\model\CosFile::get($file_id);
+                if (!empty($cos_file)) {
+                    $files_array[] = array('url'=>'https://' . $bucket . '.' . $json_domain . $cos_file['url'],'name'=>$cos_file['name']);
+                }
+            }
+        }
+        $this->assign('files',$files_array);
+
+        // 获取回复列表
+        $message_reply = MessageReply::where(['message_id'=>$message['id']])->select();
+        if (!empty($message_reply)) {
+            foreach ($message_reply as &$reply) {
+                $user_id = $reply['user_id'];
+                $reply_user = \app\common\model\User::get($user_id);
+                $reply['username'] = $reply_user['username'];
+                $reply['avatar'] = $reply_user['avatar'];
+                $reply['nickname'] = $reply_user['nickname'];
+                // 获取回复附件
+                $files_array = array();
+                $message_file = \app\common\model\MessageReplyFile::where(['reply_id'=>$reply['id'],'status'=>1])->order('sort desc')->select();
+                if (!empty($message_file)) {
+                    foreach ($message_file as $item) {
+                        $file_id = $item['file_id'];
+                        $cos_file = \app\common\model\CosFile::get($file_id);
+                        if (!empty($cos_file)) {
+                            $files_array[] = array('url'=>'https://' . $bucket . '.' . $json_domain . $cos_file['url'],'name'=>$cos_file['name']);
+                        }
+                    }
+                }
+                $reply['files'] = $files_array;
+            }
+        }
+        $this->assign('reply',$message_reply);
+
+
+
 
         return $this->fetch();
     }
 
+    /**
+     * 保存更新信息
+     * @return array
+     */
     public function update()
     {
+        $post_data = $this->request->post();
+        // 验证post数据
+
+        // 获取当前用户信息
+        $session_username = session('username');
+        $user = \app\common\model\User::get(['username'=>$session_username]);
+        if (empty($user)) {
+            $result = array('code'=>1,'message'=>'user not exits');
+            return $result;
+        }
+        $user_id = $user['id'];
+
+        // 保存 message_reply 信息
+        $reply_array = array('user_id'=>$post_data['user_id'],'message_id'=>$post_data['message_id'],'content'=>$post_data['content'],'status'=>1);
+        $message_reply = new MessageReply();
+        $reply_save = $message_reply->allowField(true)->save($reply_array);
+        if (!$reply_save) {
+            $result = array('code'=>1,'message'=>'save message reply fail');
+            return $result;
+        }
+        $message_reply_id = $message_reply->id;
+
+        // 保存附件信息到数据库
+        $cos_file_array = array();
+        if (!empty($post_data['files'])) {
+            foreach ($post_data['files'] as $item) {
+                $str_len = strlen($item);
+                $file_name_len = $str_len - 28;
+                $file_name = substr($item,28,$file_name_len);
+                $url_md5 = md5($item);
+                $cos_file_data = array('user_id'=>$user_id,'name'=>$file_name,'url'=>$item,'url_md5'=>$url_md5,'status'=>1);
+                $save_cos_file = CosFile::save($cos_file_data);
+                if ($save_cos_file['code']) {
+                    return $save_cos_file;
+                }
+                $cos_file_array[] = $save_cos_file['data'];
+            }
+        }
+
+        // 保存消息回复附件信息
+        $message_file_array = array();
+        foreach ($cos_file_array as $cos_file) {
+            $message_file_data = array('reply_id'=>$message_reply_id,'file_id'=>$cos_file['id'],'sort'=>$cos_file['id'],'status'=>1);
+            $message_file = MessageReplyFile::save($message_file_data);
+            if ($message_file['code']) {
+                return $message_file;
+            }
+            $message_file_array[] = $message_file_data;
+        }
+
+        // 返回结果
+        $result = array('code'=>0,'message'=>'save message success','data'=>$reply_array);
+        return $result;
 
     }
 

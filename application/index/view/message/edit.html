@@ -66,27 +66,59 @@
 <body>
 <div class="layui-container app-body" style="margin-top: 10px;background: #ffffff;">
     <div style="height: 20px;"></div>
+    <img src="{$send_user.avatar}" height="25" width="25" /> {$send_user.nickname} Send To User : <img src="{$to_user.avatar}" height="25" width="25" /> {$to_user.nickname}  <span style="float: right;">Time:{$message.create_time}</span>
+    <table class="layui-table">
+        <tbody>
+        <tr>
+            <td>Title</td>
+            <td>{$message.title}</td>
+        </tr>
+        <tr>
+            <td>Content</td>
+            <td>{$message.content|raw}</td>
+        </tr>
+        <tr>
+            <td>Attached Files</td>
+            <td>
+                {volist name="files" id="vo"}
+                <a href="{$vo.url}" >{$vo.name}</a> <br />
+                {/volist}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    {volist name="reply" id="list"}
+    <table class="layui-table">
+        <tbody>
+        <tr>
+            <td>Reply</td>
+            <td>{$list.nickname}</td>
+        </tr>
+        <tr>
+            <td>Content</td>
+            <td>{$list.content|raw}</td>
+        </tr>
+        <tr>
+            <td>Attached Files</td>
+            <td>
+                {volist name="list['files']" id="vo"}
+                <a href="{$vo.url}" >{$vo.name}</a> <br />
+                {/volist}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    {/volist}
+
+    <div style="height: 20px;"></div>
     <form class="layui-form layui-form-pane" action="">
+        <input type="hidden" name="user_id" autocomplete="off" class="layui-input" value="{$user.id}">
+        <input type="hidden" name="message_id" autocomplete="off" class="layui-input" value="{$message.id}">
         <div class="layui-form-item">
-            <label class="layui-form-label">To User</label>
-            <div class="layui-input-inline">
-                <select name="to_user_id" lay-verify="required">
-                    {volist name="user" id="vo"}
-                    <option value="{$vo.id}">{$vo.username}</option>
-                    {/volist}
-                </select>
-            </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">title</label>
+            <label class="layui-form-label" style="height: 45px;">Reply</label>
             <div class="layui-input-block">
-                <input type="text" name="title" autocomplete="off" class="layui-input" value="{$message.title}">
-            </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label" style="height: 45px;">content</label>
-            <div class="layui-input-block">
-                <textarea id="content" name="content" style="display: none;">{$message.content}</textarea>
+                <textarea id="content" name="content" style="display: none;"></textarea>
             </div>
         </div>
         <div class="layui-form-item">
@@ -144,7 +176,7 @@
         </div>
 
         <div class="layui-form-item" style="margin-top: 20px;">
-            <button class="layui-btn" lay-submit="" lay-filter="create" style="width: 100%;">Send</button>
+            <button class="layui-btn" lay-submit="" lay-filter="edit" style="width: 100%;">Send</button>
         </div>
     </form>
     <div style="height: 20px;"></div>
@@ -282,8 +314,8 @@
         });
 
         // 提交表单
-        form.on('submit(create)',function (data) {
-            var url = "/index/message/save";
+        form.on('submit(edit)',function (data) {
+            var url = "/index/message/update";
             // 获取上传的附件列表
             var files_arr = [];
             var list = document.getElementsByClassName("file-name");
