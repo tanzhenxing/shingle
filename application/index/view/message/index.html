@@ -1,67 +1,103 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    {include file="public/header" title="Subject List" /}
+    {include file="public/header" title="Case List" /}
+    <link rel="stylesheet" href="/layuiadmin/style/template.css?20190604" media="all">
 </head>
 <body>
-
 <div class="layui-fluid" id="LAY-app-message">
-    <div class="layui-card">
-        <div class="layui-tab layui-tab-brief">
+    <div class="LAY-app-message-btns" style="margin-bottom: 10px;">
+        <button class="layui-btn" id="create">New Case</button>
+    </div>
+    <div class="layadmin-caller">
+        <div class="layui-tab layui-tab-brief caller-tab" lay-filter="case">
             <ul class="layui-tab-title">
-                <li class="layui-this">Subject List</li>
+                <li class="layui-this">All ({$total})</li>
+                <li>Unread ({$unread_total})</li>
+                <li>Unanswered ({$unanswered_total})</li>
             </ul>
             <div class="layui-tab-content">
                 <div class="layui-tab-item layui-show">
-                    <div class="LAY-app-message-btns" style="margin-bottom: 10px;">
-                        <button class="layui-btn" id="create">New Subject</button>
+                    <div class="caller-contar">
+                        {volist name='list' id='vo'}
+                        <div class="caller-item">
+                            <div class="caller-img caller-fl" style="width: 50px;">
+                                <img height="50" width="50" src="{if $vo.user.avatar==''}/static/images/avatar.jpg{else /}{$vo.user.avatar}{/if}" />
+                                <br /><span>{$vo.user.nickname}</span>
+                            </div>
+                            <div class="caller-main caller-fl">
+                                <p><strong>{$vo.title}</strong></p>
+                                <p class="caller-adds">{$vo.description|raw}</p>
+                                <div class="caller-iconset">
+                                    To User : {$vo.to_user_nickname} / Time: {$vo.update_time}
+                                </div>
+                            </div>
+                            <button class="layui-btn layui-btn-sm caller-fr"  name="read" value="{$vo.id}">
+                                <i class="layui-icon layui-icon-ok"></i>
+                                Reply
+                            </button>
+                        </div>
+                        {/volist}
                     </div>
-
-                    <div class="layui-form">
-                        <table class="layui-table" lay-skin="line" lay-filter="member">
-                            <thead>
-                            <tr>
-                                <th>id</th>
-                                <th>to user</th>
-                                <th>title</th>
-                                <th>time</th>
-                                <th>handle</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {volist name='list' id='vo'}
-                            <tr>
-                                <td>{$vo.id}</td>
-                                <td>
-                                    <img height="25" width="25" src="{if $vo.to_user_avatar==''}/static/images/avatar.jpg{else /}{$vo.to_user_avatar}{/if}" />
-                                    <span style="font-size: 16px;">{$vo.to_user_nickname}</span>
-                                </td>
-                                <td>{$vo.title}</td>
-                                <td>{$vo.update_time}</td>
-                                <td>
-                                    <button class="layui-btn layui-btn-xs" name="edit" value="{$vo.id}"><i class="layui-icon layui-icon-edit"></i>Edit</button>
-                                    <button class="layui-btn layui-btn-danger layui-btn-xs" name="delete" value="{$vo.id}"><i class="layui-icon layui-icon-delete"></i>Delete</button>
-                                </td>
-                            </tr>
-                            {/volist}
-                            </tbody>
-                        </table>
-                        <div class="layui-box layui-laypage">{$page|raw}</div>
+                </div>
+                <div class="layui-tab-item">
+                    <div class="caller-contar">
+                        {volist name='unread' id='vo'}
+                        <div class="caller-item">
+                            <div class="caller-img caller-fl" style="width: 50px;">
+                                <img height="50" width="50" src="{if $vo.user.avatar==''}/static/images/avatar.jpg{else /}{$vo.user.avatar}{/if}" />
+                                <br /><span>{$vo.user.nickname}</span>
+                            </div>
+                            <div class="caller-main caller-fl">
+                                <p><strong>{$vo.title}</strong></p>
+                                <p class="caller-adds">{$vo.description|raw}</p>
+                                <div class="caller-iconset">
+                                    To User : {$vo.to_user_nickname} / Time: {$vo.update_time}
+                                </div>
+                            </div>
+                            <button class="layui-btn layui-btn-sm caller-fr"  name="read" value="{$vo.id}">
+                                <i class="layui-icon layui-icon-ok"></i>
+                                Reply
+                            </button>
+                        </div>
+                        {/volist}
                     </div>
-
+                </div>
+                <div class="layui-tab-item">
+                    <div class="caller-contar">
+                        {volist name='unanswered' id='vo'}
+                        <div class="caller-item">
+                            <div class="caller-img caller-fl" style="width: 50px;">
+                                <img height="50" width="50" src="{if $vo.user.avatar==''}/static/images/avatar.jpg{else /}{$vo.user.avatar}{/if}" />
+                                <br /><span>{$vo.user.nickname}</span>
+                            </div>
+                            <div class="caller-main caller-fl">
+                                <p><strong>{$vo.title}</strong></p>
+                                <p class="caller-adds">{$vo.description|raw}</p>
+                                <div class="caller-iconset">
+                                    To User : {$vo.to_user_nickname} / Time: {$vo.update_time}
+                                </div>
+                            </div>
+                            <button class="layui-btn layui-btn-sm caller-fr"  name="read" value="{$vo.id}">
+                                <i class="layui-icon layui-icon-ok"></i>
+                                Reply
+                            </button>
+                        </div>
+                        {/volist}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-
 <script>
-    layui.use(['laypage', 'layer','form','table'], function() {
+    layui.use(['laypage', 'layer','form','table','element'], function() {
         var laypage = layui.laypage
             , layer = layui.layer
             , form = layui.form
             , table = layui.table
+            , element = layui.element
             , $ = layui.$;
 
         // 新增 记录
@@ -84,11 +120,11 @@
             var dataName = this.name
                 , id = this.value
                 ,url;
-            if(dataName === 'edit'){
-                url = "{:url('index/Message/edit')}?id=" + id;
+            if(dataName === 'read'){
+                url = "{:url('index/Message/read')}?id=" + id;
                 layer.open({
                     type: 2,
-                    title: 'Edit Subject',
+                    title: 'Reply Case',
                     shadeClose: true,
                     shade: 0.8,
                     area: ['90%', '90%'],
@@ -98,43 +134,11 @@
                         location.reload(); // 重新加载页面
                     }
                 });
-
-            } else if (dataName === 'delete'){
-
-                layer.open({
-                    title: 'Confirm'
-                    ,content: 'confirm delete the Subject?'
-                    ,btn: ['Yes']
-                    ,btnAlign: 'c'
-                    ,shade: [0.8, '#000000']
-                    ,shadeClose: true
-                    ,closeBtn:2
-                    ,yes:function (logoutBtn, layero) {
-                        url = "{:url('index/Message/delete')}?id=" + id;
-                        $.ajax({
-                            url:url,
-                            type:"delete",
-                            contentType:"application/json",
-                            dataType:"json",
-                            data:id,
-                            success:function(result){
-                                layer.msg(result.message,{icon:1});
-                                location.reload(); // 重新加载页面
-                            },
-                            error:function(result){
-                                layer.msg(result.message,{icon:2});
-                            }
-                        });
-                        layer.close(logoutBtn);
-                    }
-                    ,cancel:function () {
-                        layer.msg('cancel',{icon:2});
-                    }
-                });
-
             }
         });
+
     });
 </script>
+
 </body>
 </html>

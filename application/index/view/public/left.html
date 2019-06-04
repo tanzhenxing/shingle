@@ -1,16 +1,17 @@
 <div class="layui-side layui-side-menu">
     <div class="layui-side-scroll">
-        <div class="layui-logo" lay-href="home/console.html">
+        <div class="layui-logo" lay-href="{:url('index/User/index')}">
             <span>{$site.title}</span>
         </div>
 
         <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
             <li data-name="home" class="layui-nav-item layui-nav-itemed">
-                <a lay-href="{:url('admin/Message/index')}" lay-tips="Subject List" lay-direction="2">
+                <a lay-href="{:url('admin/Message/index')}" lay-tips="Case List" lay-direction="2">
                     <i class="layui-icon layui-icon-senior"></i>
-                    <cite>Subject List</cite>
+                    <cite>Case List</cite>
                 </a>
             </li>
+            {if $user.type==0}
             <li data-name="set" class="layui-nav-item">
                 <a href="javascript:;" lay-tips="System Manage" lay-direction="2">
                     <i class="layui-icon layui-icon-set"></i>
@@ -18,7 +19,10 @@
                 </a>
                 <dl class="layui-nav-child">
                     <dd>
-                        <a lay-href="{:url('index/user/member')}">User List</a>
+                        <a lay-href="{:url('index/Message/member')}">Message List</a>
+                    </dd>
+                    <dd>
+                        <a lay-href="{:url('index/User/member')}">User List</a>
                     </dd>
                     <dd>
                         <a lay-href="{:url('index/User/admin')}">Admin List</a>
@@ -31,6 +35,7 @@
                     </dd>
                 </dl>
             </li>
+            {/if}
         </ul>
     </div>
 </div>

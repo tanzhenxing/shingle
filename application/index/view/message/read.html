@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/header" title="edit Subject" /}
+    <style>
+        a {
+            color: #0071ff;
+        }
+        .float-right {
+            float: right;
+        }
+        #form input[type="text"] {
+            width: 40px;
+            padding: 2px;
+            vertical-align: middle;
+        }
+        #form input[type="file"] {
+            vertical-align: middle;
+        }
+
+        .file-list {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .file-list {
+            width: 960px;
+            border-collapse: collapse;
+        }
+
+        .file-name {
+            display: inline-block;
+            width: 310px;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        .file-item td {
+            border: 1px solid #ccc;
+            padding: 5px 10px;
+            font-size: 12px;
+            line-height: 20px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        .file-progress {
+            position: relative;
+            display: inline-block;
+            width: 100px;
+            height: 6px;
+            background: #ddd;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+
+        .file-progress-loaded {
+            position: absolute;
+            display: inline-block;
+            height: 6px;
+            background: #0071ff;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-container app-body" style="margin-top: 10px;background: #ffffff;">
+    <div style="height: 20px;"></div>
+    <img src="{$send_user.avatar}" height="25" width="25" /> {$send_user.nickname} Send To User : <img src="{$to_user.avatar}" height="25" width="25" /> {$to_user.nickname}  <span style="float: right;">Time:{$message.create_time}</span>
+    <table class="layui-table">
+        <tbody>
+        <tr>
+            <td>Title</td>
+            <td>{$message.title}</td>
+        </tr>
+        <tr>
+            <td>Content</td>
+            <td>{$message.content|raw}</td>
+        </tr>
+        <tr>
+            <td>Attached Files</td>
+            <td>
+                {volist name="files" id="vo"}
+                <a href="{$vo.url}" >{$vo.name}</a> <br />
+                {/volist}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    {volist name="reply" id="list"}
+    <table class="layui-table">
+        <tbody>
+        <tr>
+            <td>Reply</td>
+            <td>{$list.nickname}</td>
+        </tr>
+        <tr>
+            <td>Content</td>
+            <td>{$list.content|raw}</td>
+        </tr>
+        <tr>
+            <td>Attached Files</td>
+            <td>
+                {volist name="list['files']" id="vo"}
+                <a href="{$vo.url}" >{$vo.name}</a> <br />
+                {/volist}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    {/volist}
+
+    <div style="height: 20px;"></div>
+    <form class="layui-form layui-form-pane" action="">
+        <input type="hidden" name="user_id" autocomplete="off" class="layui-input" value="{$user.id}">
+        <input type="hidden" name="message_id" autocomplete="off" class="layui-input" value="{$message.id}">
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="height: 45px;">Reply</label>
+            <div class="layui-input-block">
+                <textarea id="content" name="content" style="display: none;"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <hr />
+            <div id="app">
+                <div class="layui-form-label" style="width: 200px;margin-right: 20px;">Upload Attached File</div>
+                <div class="layui-input-block">
+                    <div id="form">
+                        <div class="float-right">total {{total}} files</div>
+                        <input type="file" value="Select file" multiple @change="selectedFile"  placeholder="Select file">
+                    </div>
+                </div>
+                <div style="height: 10px;clear: both;"></div>
+                <table class="layui-table">
+                    <colgroup>
+                        <col style="width:20%;">
+                        <col style="width:30%;">
+                        <col style="width:10%;">
+                        <col style="width:10%;">
+                        <col style="width:30%;">
+                    </colgroup>
+                    <tr class="file-item">
+                        <td>filename</td>
+                        <td>filepath</td>
+                        <td>size</td>
+                        <td>progress</td>
+                        <td class="file-action">handle</td>
+                    </tr>
+                    <tr class="file-item" v-for="item in list">
+                        <td>{{getUploadFileName(item.Key)}}</td>
+                        <td><span class="file-name">{{item.Key}}</span></td>
+                        <td>{{formatSize(item.size)}}</td>
+                        <td>
+                    <span class="file-progress" v-if="item.state==='uploading'">
+                        <span class="file-progress-loaded" :style="'width:'+item.percent*100+'%'"></span>
+                    </span>
+                            <span v-if="item.state==='success'">success</span>
+                            <span v-else-if="item.state==='waiting'">waiting</span>
+                            <span v-else-if="item.state==='checking'">checking({{parseInt(item.hashPercent*100)}}%)</span>
+                            <span v-else-if="item.state==='paused'">paused, upload{{formatSize(item.loaded)}}</span>
+                            <span v-else-if="item.state==='canceled'">canceled</span>
+                            <span v-else>{{formatSize(item.speed)}}/s, upload{{formatSize(item.loaded)}} {{parseInt(item.percent*100)}}%</span>
+                        </td>
+                        <td class="file-action">
+                            <a v-if="['waiting','checking','uploading'].includes(item.state)" href="javascript:void(0)" @click="pauseTask(item)">paused</a>
+                            <a v-if="['error','paused'].includes(item.state)" href="javascript:void(0)" @click="restartTask(item)">start</a>
+                            <a v-if="item.state!=='canceled'" href="javascript:void(0)" @click="cancelTask(item)">delete</a>
+                        </td>
+                    </tr>
+                    <tr class="file-item" v-if="!list.length">
+                        <td colspan="5" align="center">no files</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="layui-form-item" style="margin-top: 20px;">
+            <button class="layui-btn" lay-submit="" lay-filter="edit" style="width: 100%;">Send</button>
+        </div>
+    </form>
+    <div style="height: 20px;"></div>
+</div>
+
+<script src="/cos-js-sdk-v5/dist/cos-js-sdk-v5.js"></script>
+<script src="/static/js/lodash.core.min.js"></script>
+<script src="/static/js/vue.min.js"></script>
+<script>
+
+    layui.use(['layer','form','upload','layedit'],function () {
+        var layer = layui.layer
+            , form = layui.form
+            , upload = layui.upload
+            , layedit = layui.layedit
+            , $ = layui.$;
+
+        // 上传附件
+        var Bucket = '{$cos.bucket}';
+        var Region = '{$cos.region_name}';
+        var cos = new COS({
+            FileParallelLimit: 5,
+            ChunkParallelLimit: 5,
+            ChunkMbSize: 8 * 1024 * 1024,
+            getAuthorization: function (options, callback) {
+                var url = '/index/cos_key/info';
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.onload = function (e) {
+                    try {
+                        var data = JSON.parse(e.target.responseText);
+                    } catch (e) {
+                    }
+                    callback({
+                        TmpSecretId: data.credentials && data.credentials.tmpSecretId,
+                        TmpSecretKey: data.credentials && data.credentials.tmpSecretKey,
+                        XCosSecurityToken: data.credentials && data.credentials.sessionToken,
+                        ExpiredTime: data.expiredTime
+                    });
+                };
+                xhr.send();
+            }
+        });
+        new Vue({
+            el: '#app',
+            data: function () {
+                return {
+                    FileParallelLimit: 5,
+                    ChunkParallelLimit: 16,
+                    ChunkMbSize: 2,
+                    list: [],
+                    total: 0,
+                };
+            },
+            created: function () {
+                var self = this;
+                cos.on('list-update', function (data) {
+                    self.list = data.list;
+                    self.total = data.list.length;
+                });
+            },
+            methods: {
+                formatSize: function (size) {
+                    var i, unit = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+                    for (i = 0; i < unit.length && size >= 1024; i++) {
+                        size /= 1024;
+                    }
+                    return (Math.round(size * 100) / 100 || 0) + unit[i];
+                },
+                selectedFile: function (e) {
+                    var files = e.target.files;
+                    var list = [].map.call(files, function (f) {
+                        var myDate = new Date();
+                        var year = myDate.getFullYear();
+                        var month = myDate.getMonth()+1;
+                        var day = myDate.getDate();
+                        var time = myDate.getTime();
+                        var filename = Math.ceil(Math.random()*10000) + time;
+                        return {
+                            Bucket: Bucket,
+                            Region: Region,
+                            Key: 'files/' + year + '/' + month + '/' + day + '/' + filename + f.name,
+                            Body: f,
+                        };
+                    });
+                    cos.uploadFiles({files: list});
+                    document.getElementById('form');
+                },
+                pauseTask: function (task) {
+                    cos.pauseTask(task.id);
+                },
+                restartTask: function (task) {
+                    cos.restartTask(task.id);
+                },
+                cancelTask: function (task) {
+                    cos.cancelTask(task.id);
+                },
+                getUploadFileName: function (str) {
+                    return str.slice(28,str.length);
+                }
+            },
+        });
+
+        //建立编辑器
+        layedit.set({
+            uploadImage: {
+                url: '/index/upload/file' //接口url
+                ,type: 'post' //默认post
+            }
+        });
+        var my_edit = layedit.build('content');
+
+        // 上传图片
+        upload.render({
+            elem: '#upload_avatar' //绑定元素
+            ,url: "/index/upload/file" //上传接口
+            , before: function (obj) { //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
+                layer.load(); //上传loading
+            }
+            ,done: function(res){
+                console.log(res);
+                //上传完毕回调
+                if (res.code === 0) {
+                    layer.msg('上传成功',{icon:1});
+                    $('#avatar').val(res.data.url); // 显示上传之后的url
+                    document.getElementById('my_avatar').src = res.data.url;
+                    layer.closeAll();
+                } else {
+                    layer.msg('上传失败',{icon:2});
+                }
+            }
+            ,error: function(res){
+                layer.msg('上传异常',{icon:2});
+            }
+        });
+
+        // 提交表单
+        form.on('submit(edit)',function (data) {
+            var url = "/index/message/update";
+            // 获取上传的附件列表
+            var files_arr = [];
+            var list = document.getElementsByClassName("file-name");
+            for(var i=0;i<list.length;i++)
+            {
+                if(list[i].innerText){
+                    files_arr.push('/' + list[i].innerText);
+                }
+            }
+            // 获取编辑器里的内容
+            data.field.content = layedit.getContent(my_edit);
+            data.field.files = files_arr;
+            $.post(url,data.field,function (result) {
+                if(result.code === 0){
+                    layer.msg(result.message,{icon:1},function () {
+                        var index = parent.layer.getFrameIndex(window.name); // 获得frame索引
+                        parent.layer.close(index);  //关闭当前frame
+                    });
+                }else{
+                    layer.msg(result.message,{icon:2});
+                }
+            });
+            return false; // 阻止表单跳转
+        });
+
+    });
+
+</script>
+{include file="public/footer" /}
+</body>
+</html>

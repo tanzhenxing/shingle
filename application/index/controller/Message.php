@@ -2,17 +2,76 @@
 namespace app\index\controller;
 
 use app\common\model\CosRegion;
+use app\common\model\MessageRead;
 use app\common\model\MessageReply;
 
 class Message extends Base
 {
     /**
      * 消息列表
+     * @param $number
+     * @return array|mixed
+     * @throws
+     */
+    public function index()
+    {
+        // 获取当前用户的消息
+        $list = \app\common\model\Message::where(['status'=>1,'user_id'=>$this->login_user['id']])->order('update_time desc')->select();
+        $unread_array = array();
+        $unanswered_array = array();
+        foreach ($list as &$item) {
+            // 获取 接收人信息
+            $to_user_id = $item['to_user_id'];
+            $to_user_info = \app\common\model\User::get($to_user_id);
+            if (empty($to_user_info)) {
+                $result = array('code'=>1,'message'=>'to_user_id not exits');
+                return $result;
+            }
+            $item['to_user_username'] = $to_user_info['username'];
+            $item['to_user_nickname'] = $to_user_info['nickname'];
+            $item['to_user_avatar'] = $to_user_info['avatar'];
+            $get_user = \app\common\model\User::get($item['user_id']);
+            $item['user'] = $get_user;
+            $description = preg_replace("/<.*?>/is","",$item['content']); // 过滤html标记
+            $item['description'] = substr($description,0,200);
+            // 判断消息是否已读
+            $login_user = $this->login_user;
+            $message_read = MessageRead::get(['message_id'=>$item,'user_id'=>$login_user['id']]);
+            if (empty($message_read)) {
+                $unread_array[] = $item;
+                $item['read'] = 0;
+            } else {
+                $item['read'] = 1;
+            }
+            // 判断消息是否已回复
+            $message_reply = MessageReply::get(['message_id'=>$item['id']]);
+            if (empty($message_reply)) {
+                $unanswered_array[] = $item;
+                $item['reply'] = 0;
+            } else {
+                $item['reply'] = 1;
+            }
+        }
+
+        $this->assign('list',$list);
+        $this->assign('total', count($list));
+
+        $this->assign('unread',$unread_array);
+        $this->assign('unread_total',count($unread_array));
+
+        $this->assign('unanswered',$unanswered_array);
+        $this->assign('unanswered_total',count($unanswered_array));
+
+        return $this->fetch();
+    }
+
+    /**
+     * 消息管理列表
      * @param int $number
      * @return array|mixed
      * @throws
      */
-    public function index($number = 10)
+    public function manage($number = 10)
     {
         // 获取当前用户信息
         $session_username = session('username');
@@ -42,6 +101,123 @@ class Message extends Base
 
         $page = $list->render();
         $this->assign('page', $page);
+
+        return $this->fetch();
+    }
+
+    /**
+     * 读取消息
+     * @param $id
+     * @return array|mixed
+     * @throws
+     */
+    public function read($id)
+    {
+        // 获取cos 配置信息
+        $cos = \app\common\model\Cos::get(['code'=>'tencent']);
+        if (empty($cos)) {
+            $result = array('code'=>1,'message'=>'cos 配置信息不存在');
+            return $result;
+        }
+        $app_id = $cos['app_id'];
+        $bucket_name = $cos['bucket_name'];
+        $bucket = $bucket_name . '-' . $app_id;
+        $cos['bucket'] = $bucket;
+        $region_id = $cos['region_id'];
+        // 获取cos 地域信息
+        $cos_region = CosRegion::get($region_id);
+        if (empty($cos_region)) {
+            $result = array('code'=>1,'message'=>'cos 地域信息不存在');
+            return $result;
+        }
+        // $xml_domain = $cos_region['xml_domain'];
+        $json_domain = $cos_region['json_domain'];
+
+        $cos['region_name'] = $cos_region['name'];
+        $this->assign('cos',$cos);
+
+        $message = \app\common\model\Message::get($id);
+        if (empty($message)) {
+            $result = array('code'=>1,'message'=>'message not exits');
+            return $result;
+        }
+        $this->assign('message',$message);
+
+        // 当前登录的用户
+        $session_username = session('username');
+        $user = \app\common\model\User::get(['username'=>$session_username]);
+        if (empty($user)) {
+            $result = array('code'=>1,'message'=>'user_id not exits');
+            return $result;
+        }
+        $this->assign('user',$user);
+
+        // 发送人信息
+        $send_user = \app\common\model\User::get($message['user_id']);
+        if (empty($send_user)) {
+            $result = array('code'=>1,'message'=>'user_id not exits');
+            return $result;
+        }
+        $this->assign('send_user',$send_user);
+
+        // 获取接收人信息
+        $to_user = \app\common\model\User::get($message['to_user_id']);
+        if (empty($to_user)) {
+            $result = array('code'=>1,'message'=>'to_user_id not exits');
+            return $result;
+        }
+        $this->assign('to_user',$to_user);
+        // 获取消息附件
+        $files_array = array();
+        $message_file = \app\common\model\MessageFile::where(['message_id'=>$message['id'],'status'=>1])->order('sort desc')->select();
+        if (!empty($message_file)) {
+            foreach ($message_file as $item) {
+                $file_id = $item['file_id'];
+                $cos_file = \app\common\model\CosFile::get($file_id);
+                if (!empty($cos_file)) {
+                    $files_array[] = array('url'=>'https://' . $bucket . '.' . $json_domain . $cos_file['url'],'name'=>$cos_file['name']);
+                }
+            }
+        }
+        $this->assign('files',$files_array);
+
+        // 获取回复列表
+        $message_reply = MessageReply::where(['message_id'=>$message['id']])->select();
+        if (!empty($message_reply)) {
+            foreach ($message_reply as &$reply) {
+                $user_id = $reply['user_id'];
+                $reply_user = \app\common\model\User::get($user_id);
+                $reply['username'] = $reply_user['username'];
+                $reply['avatar'] = $reply_user['avatar'];
+                $reply['nickname'] = $reply_user['nickname'];
+                // 获取回复附件
+                $files_array = array();
+                $message_file = \app\common\model\MessageReplyFile::where(['reply_id'=>$reply['id'],'status'=>1])->order('sort desc')->select();
+                if (!empty($message_file)) {
+                    foreach ($message_file as $item) {
+                        $file_id = $item['file_id'];
+                        $cos_file = \app\common\model\CosFile::get($file_id);
+                        if (!empty($cos_file)) {
+                            $files_array[] = array('url'=>'https://' . $bucket . '.' . $json_domain . $cos_file['url'],'name'=>$cos_file['name']);
+                        }
+                    }
+                }
+                $reply['files'] = $files_array;
+            }
+        }
+        $this->assign('reply',$message_reply);
+
+        // 保存已读记录
+        $message_read = new MessageRead();
+        $message_read_info = $message_read->get($id);
+        if (empty($message_read_info)) {
+            $read_data_array = array('message_id'=>$id,'user_id'=>$this->login_user['id'],'status'=>1);
+            $message_read_save = $message_read->allowField(true)->save($read_data_array);
+            if (!$message_read_save) {
+                $result = array('code'=>1,'message'=>'save message read fail');
+                return $result;
+            }
+        }
 
         return $this->fetch();
     }
@@ -153,6 +329,111 @@ class Message extends Base
     }
 
     /**
+     * 回复消息
+     * @param $id
+     * @return array|mixed
+     * @throws
+     */
+    public function reply($id)
+    {
+        // 获取cos 配置信息
+        $cos = \app\common\model\Cos::get(['code'=>'tencent']);
+        if (empty($cos)) {
+            $result = array('code'=>1,'message'=>'cos 配置信息不存在');
+            return $result;
+        }
+        $app_id = $cos['app_id'];
+        $bucket_name = $cos['bucket_name'];
+        $bucket = $bucket_name . '-' . $app_id;
+        $cos['bucket'] = $bucket;
+        $region_id = $cos['region_id'];
+        // 获取cos 地域信息
+        $cos_region = CosRegion::get($region_id);
+        if (empty($cos_region)) {
+            $result = array('code'=>1,'message'=>'cos 地域信息不存在');
+            return $result;
+        }
+        // $xml_domain = $cos_region['xml_domain'];
+        $json_domain = $cos_region['json_domain'];
+
+        $cos['region_name'] = $cos_region['name'];
+        $this->assign('cos',$cos);
+
+        $message = \app\common\model\Message::get($id);
+        if (empty($message)) {
+            $result = array('code'=>1,'message'=>'message not exits');
+            return $result;
+        }
+        $this->assign('message',$message);
+
+        // 当前登录的用户
+        $session_username = session('username');
+        $user = \app\common\model\User::get(['username'=>$session_username]);
+        if (empty($user)) {
+            $result = array('code'=>1,'message'=>'user_id not exits');
+            return $result;
+        }
+        $this->assign('user',$user);
+
+        // 发送人信息
+        $send_user = \app\common\model\User::get($message['user_id']);
+        if (empty($send_user)) {
+            $result = array('code'=>1,'message'=>'user_id not exits');
+            return $result;
+        }
+        $this->assign('send_user',$send_user);
+
+        // 获取接收人信息
+        $to_user = \app\common\model\User::get($message['to_user_id']);
+        if (empty($to_user)) {
+            $result = array('code'=>1,'message'=>'to_user_id not exits');
+            return $result;
+        }
+        $this->assign('to_user',$to_user);
+        // 获取消息附件
+        $files_array = array();
+        $message_file = \app\common\model\MessageFile::where(['message_id'=>$message['id'],'status'=>1])->order('sort desc')->select();
+        if (!empty($message_file)) {
+            foreach ($message_file as $item) {
+                $file_id = $item['file_id'];
+                $cos_file = \app\common\model\CosFile::get($file_id);
+                if (!empty($cos_file)) {
+                    $files_array[] = array('url'=>'https://' . $bucket . '.' . $json_domain . $cos_file['url'],'name'=>$cos_file['name']);
+                }
+            }
+        }
+        $this->assign('files',$files_array);
+
+        // 获取回复列表
+        $message_reply = MessageReply::where(['message_id'=>$message['id']])->select();
+        if (!empty($message_reply)) {
+            foreach ($message_reply as &$reply) {
+                $user_id = $reply['user_id'];
+                $reply_user = \app\common\model\User::get($user_id);
+                $reply['username'] = $reply_user['username'];
+                $reply['avatar'] = $reply_user['avatar'];
+                $reply['nickname'] = $reply_user['nickname'];
+                // 获取回复附件
+                $files_array = array();
+                $message_file = \app\common\model\MessageReplyFile::where(['reply_id'=>$reply['id'],'status'=>1])->order('sort desc')->select();
+                if (!empty($message_file)) {
+                    foreach ($message_file as $item) {
+                        $file_id = $item['file_id'];
+                        $cos_file = \app\common\model\CosFile::get($file_id);
+                        if (!empty($cos_file)) {
+                            $files_array[] = array('url'=>'https://' . $bucket . '.' . $json_domain . $cos_file['url'],'name'=>$cos_file['name']);
+                        }
+                    }
+                }
+                $reply['files'] = $files_array;
+            }
+        }
+        $this->assign('reply',$message_reply);
+
+        return $this->fetch();
+    }
+
+    /**
      * 编辑消息
      * @param $id
      * @return array|mixed
@@ -254,9 +535,6 @@ class Message extends Base
         }
         $this->assign('reply',$message_reply);
 
-
-
-
         return $this->fetch();
     }
 
@@ -339,9 +617,33 @@ class Message extends Base
         return $result;
     }
 
-    public function search()
+    /**
+     * 搜索消息
+     * @param null $keywords
+     * @return mixed
+     * @throws
+     */
+    public function search($keywords = null)
     {
-
+        $this->assign('keywords',$keywords);
+        // 获取消息列表
+        $message = \app\common\model\Message::where('title','like',$keywords.'%')->select();
+        foreach ($message as &$item) {
+            $get_user = \app\common\model\User::get($item['user_id']);
+            $item['user'] = $get_user;
+            $description = preg_replace("/<.*?>/is","",$item['content']); // 过滤html标记
+            $item['description'] = substr($description,0,160);
+            // 判断消息是否已读
+            $login_user = $this->login_user;
+            $message_read = MessageRead::get(['message_id'=>$item,'user_id'=>$login_user['id']]);
+            if (empty($message_read)) {
+                $item['read'] = 0;
+            } else {
+                $item['read'] = 1;
+            }
+        }
+        $this->assign('message',$message);
+        return $this->fetch();
     }
 
     /**

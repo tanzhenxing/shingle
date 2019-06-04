@@ -5,6 +5,8 @@ use think\Controller;
 
 class Base extends Controller
 {
+    protected $login_user;
+
     /**
      * 基类初始化
      */
@@ -30,6 +32,7 @@ class Base extends Controller
             exit;
         }
         $this->assign('user',$user_info);
+        $this->login_user = $user_info;
     }
 
     /**
