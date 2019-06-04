@@ -209,7 +209,7 @@ class Message extends Base
 
         // 保存已读记录
         $message_read = new MessageRead();
-        $message_read_info = $message_read->get($id);
+        $message_read_info = $message_read->get(['message_id'=>$id]);
         if (empty($message_read_info)) {
             $read_data_array = array('message_id'=>$id,'user_id'=>$this->login_user['id'],'status'=>1);
             $message_read_save = $message_read->allowField(true)->save($read_data_array);
