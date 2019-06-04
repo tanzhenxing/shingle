@@ -36,7 +36,7 @@ class Message extends Base
             $item['description'] = substr($description,0,200);
             // 判断消息是否已读
             $login_user = $this->login_user;
-            $message_read = MessageRead::get(['message_id'=>$item,'user_id'=>$login_user['id']]);
+            $message_read = MessageRead::get(['message_id'=>$item['id'],'user_id'=>$login_user['id']]);
             if (empty($message_read)) {
                 $unread_array[] = $item;
                 $item['read'] = 0;

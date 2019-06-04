@@ -19,16 +19,11 @@
                     <ul class="layadmin-serach-list layui-text">
                         {volist name="message" id="vo"}
                         <li style="border-bottom: 1px solid #f6f6f6;">
-                            <a href="" class="layui-serachlist-cover">
+                            <div class="layui-serachlist-cover">
                                 <img src="{$vo.user.avatar}">
-                            </a>
+                            </div>
                             <div class="layui-serachlist-text" >
-                                <h3>
-                                    <a href="">{$vo.title}</a>
-                                    {if $vo.read==0}
-                                    <span class="layui-badge">Unread</span>
-                                    {/if}
-                                </h3>
+                                <h3><a href="/index/message/read/id/{$vo.id}">{$vo.title}</a></h3>
                                 <p>{$vo.description|raw}</p>
                             </div>
                         </li>

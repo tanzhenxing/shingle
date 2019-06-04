@@ -61,54 +61,53 @@
             height: 6px;
             background: #0071ff;
         }
+        .message-content img {
+            width: 100%;
+        }
     </style>
 </head>
 <body>
 <div class="layui-container app-body" style="margin-top: 10px;background: #ffffff;">
     <div style="height: 20px;"></div>
-    <img src="{$send_user.avatar}" height="25" width="25" /> {$send_user.nickname} Send To User : <img src="{$to_user.avatar}" height="25" width="25" /> {$to_user.nickname}  <span style="float: right;">Time:{$message.create_time}</span>
-    <table class="layui-table">
-        <tbody>
-        <tr>
-            <td>Title</td>
-            <td>{$message.title}</td>
-        </tr>
-        <tr>
-            <td>Content</td>
-            <td>{$message.content|raw}</td>
-        </tr>
-        <tr>
-            <td>Attached Files</td>
-            <td>
-                {volist name="files" id="vo"}
-                <a href="{$vo.url}" >{$vo.name}</a> <br />
-                {/volist}
-            </td>
-        </tr>
-        </tbody>
-    </table>
+    <h1 style="text-align: center;padding-top: 10px;padding-bottom: 20px;">{$message.title}</h1>
+    <div style="padding-right: 10px;text-align: right">Time:{$message.create_time}</div>
+    <fieldset class="layui-elem-field">
+        <legend style="font-size: 14px;"><img src="{$send_user.avatar}" height="15" width="15" /> {$send_user.nickname} Send To User : <img src="{$to_user.avatar}" height="15" width="15" /> {$to_user.nickname}</legend>
+        <div class="layui-field-box" style="word-wrap:break-word;text-indent:25px;">
+            <div class="message-content">
+            {$message.content|raw}
+            </div>
+        </div>
+        <table class="layui-table" style="width: 95%;margin-left: 15px;">
+            <tr>
+                <td>Attached Files</td>
+                <td>
+                    {volist name="files" id="vo"}
+                    <a href="{$vo.url}" >{$vo.name}</a> <br />
+                    {/volist}
+                </td>
+            </tr>
+        </table>
+    </fieldset>
 
     {volist name="reply" id="list"}
-    <table class="layui-table">
-        <tbody>
-        <tr>
-            <td>Reply</td>
-            <td>{$list.nickname}</td>
-        </tr>
-        <tr>
-            <td>Content</td>
-            <td>{$list.content|raw}</td>
-        </tr>
-        <tr>
-            <td>Attached Files</td>
-            <td>
-                {volist name="list['files']" id="vo"}
-                <a href="{$vo.url}" >{$vo.name}</a> <br />
-                {/volist}
-            </td>
-        </tr>
-        </tbody>
-    </table>
+    <blockquote class="layui-elem-quote layui-quote-nm">
+        <div>Reply：{$list.nickname} <span style="float: right;">{$list.update_time}</span></div>
+        <hr />
+        <div class="message-content">
+            {$list.content|raw}
+        </div>
+        <table class="layui-table">
+            <tr>
+                <td>Attached Files</td>
+                <td>
+                    {volist name="list['files']" id="vo"}
+                    <a href="{$vo.url}" >{$vo.name}</a> <br />
+                    {/volist}
+                </td>
+            </tr>
+        </table>
+    </blockquote>
     {/volist}
 
     <div style="height: 20px;"></div>
