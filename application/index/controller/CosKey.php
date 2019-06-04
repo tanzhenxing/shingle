@@ -1,7 +1,6 @@
 <?php
 namespace app\index\controller;
 
-use app\common\model\CosRegion;
 
 class CosKey extends Base
 {
@@ -11,26 +10,10 @@ class CosKey extends Base
     public function info()
     {
         // 获取cos 配置信息
-        $cos = \app\common\model\Cos::get(['code'=>'tencent']);
-        if (empty($cos)) {
-            $result = array('code'=>1,'message'=>'cos 配置信息不存在');
-            return $result;
+        $cos_info = \app\common\controller\Cos::info();
+        if ($cos_info['code']) {
+            return $cos_info;
         }
-        $app_id = $cos['app_id'];
-        $secret_id = $cos['secret_id'];
-        $secret_key = $cos['secret_key'];
-        $bucket_name = $cos['bucket_name'];
-        $bucket = $bucket_name . '-' . $app_id;
-
-        $region_id = $cos['region_id'];
-        // 获取cos 地域信息
-        $cos_region = CosRegion::get($region_id);
-        if (empty($cos_region)) {
-            $result = array('code'=>1,'message'=>'cos 地域信息不存在');
-            return $result;
-        }
-        $region_name = $cos_region['name'];
-
         // 计算临时秘钥
         $get_cos_key = new \app\common\controller\CosKey();
         // 配置参数
@@ -38,10 +21,10 @@ class CosKey extends Base
             'url' => 'https://sts.tencentcloudapi.com/',
             'domain' => 'sts.tencentcloudapi.com',
             'proxy' => '',
-            'secretId' => $secret_id, // 固定密钥
-            'secretKey' => $secret_key, // 固定密钥
-            'bucket' => $bucket, // 换成你的 bucket
-            'region' => $region_name, // 换成 bucket 所在园区
+            'secretId' => $cos_info['data']['cos']['secret_id'], // 固定密钥
+            'secretKey' => $cos_info['data']['cos']['secret_key'], // 固定密钥
+            'bucket' => $cos_info['data']['cos']['bucket'], // 换成你的 bucket
+            'region' => $cos_info['data']['region']['name'], // 换成 bucket 所在园区
             'durationSeconds' => 1800, // 密钥有效期
             'allowPrefix' => '*', // 这里改成允许的路径前缀，可以根据自己网站的用户登录态判断允许上传的目录，例子：* 或者 a/* 或者 a.jpg
             // 密钥的权限列表。简单上传和分片需要以下的权限，其他权限列表请看 https://cloud.tencent.com/document/product/436/31923
@@ -66,7 +49,6 @@ class CosKey extends Base
         header('Content-Type: application/json');
         header('Access-Control-Allow-Origin: http://127.0.0.1'); // 这里修改允许跨域访问的网站
         header('Access-Control-Allow-Headers: origin,accept,content-type');
-        // echo json_encode($tempKeys);
         return json($tempKeys);
     }
 

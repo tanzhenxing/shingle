@@ -3,6 +3,10 @@ namespace app\index\controller;
 
 class Site extends Base
 {
+    /**
+     * 编辑网站信息
+     * @return mixed
+     */
     public function edit()
     {
         return $this->fetch();
@@ -25,12 +29,12 @@ class Site extends Base
             unset($post_data['icon']);
         }
         $site = new \app\common\model\Site();
-        $site_info = $site->get(['code'=>'woniu_es']);
+        $site_info = $site->get(['code'=>$this->site_code]);
         $site_save = $site_info->allowField(true)->save($post_data);
         if ($site_save) {
-            $result = array('code'=>0,'message'=>'update success');
+            $result = array('code'=>0,'message'=>'update site info success');
         } else {
-            $result = array('code'=>1,'message'=>'update fail');
+            $result = array('code'=>1,'message'=>'update site info fail');
         }
         return $result;
     }

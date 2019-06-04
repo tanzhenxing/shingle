@@ -241,25 +241,11 @@ class Message extends Base
         $this->assign('user',$user_array);
 
         // 获取cos 配置信息
-        $cos = \app\common\model\Cos::get(['code'=>'tencent']);
-        if (empty($cos)) {
-            $result = array('code'=>1,'message'=>'cos 配置信息不存在');
-            return $result;
+        $cos_info = \app\common\controller\Cos::info();
+        if ($cos_info['code']) {
+            return $cos_info;
         }
-        $app_id = $cos['app_id'];
-        $bucket_name = $cos['bucket_name'];
-        $bucket = $bucket_name . '-' . $app_id;
-        $cos['bucket'] = $bucket;
-        $region_id = $cos['region_id'];
-        // 获取cos 地域信息
-        $cos_region = CosRegion::get($region_id);
-        if (empty($cos_region)) {
-            $result = array('code'=>1,'message'=>'cos 地域信息不存在');
-            return $result;
-        }
-        $cos['region_name'] = $cos_region['name'];
-
-        $this->assign('cos',$cos);
+        $this->assign('cos',$cos_info['data']);
 
         return $this->fetch();
     }
@@ -278,14 +264,8 @@ class Message extends Base
             $result = array('code'=>1,'message'=>$validate->getError());
             return $result;
         }
-        // 获取当前用户信息
-        $session_username = session('username');
-        $user = \app\common\model\User::get(['username'=>$session_username]);
-        if (empty($user)) {
-            $result = array('code'=>1,'message'=>'user not exits');
-            return $result;
-        }
-        $user_id = $user['id'];
+        // 获取当前用户id
+        $user_id = $this->user_login['id'];
 
         // 保存消息到数据
         $message_array = array('user_id'=>$user_id,'to_user_id'=>$post_data['to_user_id'],'title'=>$post_data['title'],'content'=>$post_data['content'],'status'=>1);
@@ -337,43 +317,18 @@ class Message extends Base
     public function reply($id)
     {
         // 获取cos 配置信息
-        $cos = \app\common\model\Cos::get(['code'=>'tencent']);
-        if (empty($cos)) {
-            $result = array('code'=>1,'message'=>'cos 配置信息不存在');
-            return $result;
+        $cos_info = \app\common\controller\Cos::info();
+        if ($cos_info['code']) {
+            return $cos_info;
         }
-        $app_id = $cos['app_id'];
-        $bucket_name = $cos['bucket_name'];
-        $bucket = $bucket_name . '-' . $app_id;
-        $cos['bucket'] = $bucket;
-        $region_id = $cos['region_id'];
-        // 获取cos 地域信息
-        $cos_region = CosRegion::get($region_id);
-        if (empty($cos_region)) {
-            $result = array('code'=>1,'message'=>'cos 地域信息不存在');
-            return $result;
-        }
-        // $xml_domain = $cos_region['xml_domain'];
-        $json_domain = $cos_region['json_domain'];
-
-        $cos['region_name'] = $cos_region['name'];
-        $this->assign('cos',$cos);
-
+        $this->assign('cos',$cos_info['data']);
+        // 获取消息信息
         $message = \app\common\model\Message::get($id);
         if (empty($message)) {
             $result = array('code'=>1,'message'=>'message not exits');
             return $result;
         }
         $this->assign('message',$message);
-
-        // 当前登录的用户
-        $session_username = session('username');
-        $user = \app\common\model\User::get(['username'=>$session_username]);
-        if (empty($user)) {
-            $result = array('code'=>1,'message'=>'user_id not exits');
-            return $result;
-        }
-        $this->assign('user',$user);
 
         // 发送人信息
         $send_user = \app\common\model\User::get($message['user_id']);
@@ -398,7 +353,7 @@ class Message extends Base
                 $file_id = $item['file_id'];
                 $cos_file = \app\common\model\CosFile::get($file_id);
                 if (!empty($cos_file)) {
-                    $files_array[] = array('url'=>'https://' . $bucket . '.' . $json_domain . $cos_file['url'],'name'=>$cos_file['name']);
+                    $files_array[] = array('url'=>'https://' . $cos_info['data']['cos']['bucket'] . '.' . $cos_info['data']['region']['json_domain'] . $cos_file['url'],'name'=>$cos_file['name']);
                 }
             }
         }
@@ -421,7 +376,7 @@ class Message extends Base
                         $file_id = $item['file_id'];
                         $cos_file = \app\common\model\CosFile::get($file_id);
                         if (!empty($cos_file)) {
-                            $files_array[] = array('url'=>'https://' . $bucket . '.' . $json_domain . $cos_file['url'],'name'=>$cos_file['name']);
+                            $files_array[] = array('url'=>'https://' . $cos_info['data']['cos']['bucket'] . '.' . $cos_info['data']['region']['json_domain'] . $cos_file['url'],'name'=>$cos_file['name']);
                         }
                     }
                 }
@@ -442,27 +397,11 @@ class Message extends Base
     public function edit($id)
     {
         // 获取cos 配置信息
-        $cos = \app\common\model\Cos::get(['code'=>'tencent']);
-        if (empty($cos)) {
-            $result = array('code'=>1,'message'=>'cos 配置信息不存在');
-            return $result;
+        $cos_info = \app\common\controller\Cos::info();
+        if ($cos_info['code']) {
+            return $cos_info;
         }
-        $app_id = $cos['app_id'];
-        $bucket_name = $cos['bucket_name'];
-        $bucket = $bucket_name . '-' . $app_id;
-        $cos['bucket'] = $bucket;
-        $region_id = $cos['region_id'];
-        // 获取cos 地域信息
-        $cos_region = CosRegion::get($region_id);
-        if (empty($cos_region)) {
-            $result = array('code'=>1,'message'=>'cos 地域信息不存在');
-            return $result;
-        }
-        // $xml_domain = $cos_region['xml_domain'];
-        $json_domain = $cos_region['json_domain'];
-
-        $cos['region_name'] = $cos_region['name'];
-        $this->assign('cos',$cos);
+        $this->assign('cos',$cos_info['data']);
 
         $message = \app\common\model\Message::get($id);
         if (empty($message)) {
@@ -470,15 +409,6 @@ class Message extends Base
             return $result;
         }
         $this->assign('message',$message);
-
-        // 当前登录的用户
-        $session_username = session('username');
-        $user = \app\common\model\User::get(['username'=>$session_username]);
-        if (empty($user)) {
-            $result = array('code'=>1,'message'=>'user_id not exits');
-            return $result;
-        }
-        $this->assign('user',$user);
 
         // 发送人信息
         $send_user = \app\common\model\User::get($message['user_id']);
@@ -503,7 +433,7 @@ class Message extends Base
                 $file_id = $item['file_id'];
                 $cos_file = \app\common\model\CosFile::get($file_id);
                 if (!empty($cos_file)) {
-                    $files_array[] = array('url'=>'https://' . $bucket . '.' . $json_domain . $cos_file['url'],'name'=>$cos_file['name']);
+                    $files_array[] = array('url'=>'https://' . $cos_info['data']['cos']['bucket'] . '.' . $cos_info['data']['region']['json_domain'] . $cos_file['url'],'name'=>$cos_file['name']);
                 }
             }
         }
@@ -526,7 +456,7 @@ class Message extends Base
                         $file_id = $item['file_id'];
                         $cos_file = \app\common\model\CosFile::get($file_id);
                         if (!empty($cos_file)) {
-                            $files_array[] = array('url'=>'https://' . $bucket . '.' . $json_domain . $cos_file['url'],'name'=>$cos_file['name']);
+                            $files_array[] = array('url'=>'https://' . $cos_info['data']['cos']['bucket'] . '.' . $cos_info['data']['region']['json_domain'] . $cos_file['url'],'name'=>$cos_file['name']);
                         }
                     }
                 }
@@ -547,15 +477,6 @@ class Message extends Base
         $post_data = $this->request->post();
         // 验证post数据
 
-        // 获取当前用户信息
-        $session_username = session('username');
-        $user = \app\common\model\User::get(['username'=>$session_username]);
-        if (empty($user)) {
-            $result = array('code'=>1,'message'=>'user not exits');
-            return $result;
-        }
-        $user_id = $user['id'];
-
         // 保存 message_reply 信息
         $reply_array = array('user_id'=>$post_data['user_id'],'message_id'=>$post_data['message_id'],'content'=>$post_data['content'],'status'=>1);
         $message_reply = new MessageReply();
@@ -574,7 +495,7 @@ class Message extends Base
                 $file_name_len = $str_len - 28;
                 $file_name = substr($item,28,$file_name_len);
                 $url_md5 = md5($item);
-                $cos_file_data = array('user_id'=>$user_id,'name'=>$file_name,'url'=>$item,'url_md5'=>$url_md5,'status'=>1);
+                $cos_file_data = array('user_id'=>$this->user_login['id'],'name'=>$file_name,'url'=>$item,'url_md5'=>$url_md5,'status'=>1);
                 $save_cos_file = CosFile::save($cos_file_data);
                 if ($save_cos_file['code']) {
                     return $save_cos_file;
@@ -634,8 +555,7 @@ class Message extends Base
             $description = preg_replace("/<.*?>/is","",$item['content']); // 过滤html标记
             $item['description'] = substr($description,0,160);
             // 判断消息是否已读
-            $login_user = $this->login_user;
-            $message_read = MessageRead::get(['message_id'=>$item,'user_id'=>$login_user['id']]);
+            $message_read = MessageRead::get(['message_id'=>$item,'user_id'=>$this->user_login['id']]);
             if (empty($message_read)) {
                 $item['read'] = 0;
             } else {
@@ -653,26 +573,11 @@ class Message extends Base
     public function file()
     {
         // 获取cos 配置信息
-        $cos = \app\common\model\Cos::get(['code'=>'tencent']);
-        if (empty($cos)) {
-            $result = array('code'=>1,'message'=>'cos 配置信息不存在');
-            return $result;
+        $cos_info = \app\common\controller\Cos::info();
+        if ($cos_info['code']) {
+            return $cos_info;
         }
-        $app_id = $cos['app_id'];
-        $bucket_name = $cos['bucket_name'];
-        $bucket = $bucket_name . '-' . $app_id;
-        $cos['bucket'] = $bucket;
-        $region_id = $cos['region_id'];
-        // 获取cos 地域信息
-        $cos_region = CosRegion::get($region_id);
-        if (empty($cos_region)) {
-            $result = array('code'=>1,'message'=>'cos 地域信息不存在');
-            return $result;
-        }
-        $cos['region_name'] = $cos_region['name'];
-
-        $this->assign('cos',$cos);
-
+        $this->assign('cos',$cos_info['data']);
         return $this->fetch();
     }
 

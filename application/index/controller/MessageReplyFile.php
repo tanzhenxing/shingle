@@ -3,6 +3,11 @@ namespace app\index\controller;
 
 class MessageReplyFile extends Base
 {
+    /**
+     * 保存消息回复文件信息
+     * @param $data
+     * @return array
+     */
     public static function save($data)
     {
         $message_file = new \app\common\model\MessageReplyFile();

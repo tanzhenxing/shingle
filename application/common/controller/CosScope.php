@@ -23,11 +23,17 @@ class CosScope
         $this->resourcePrefix = $resourcePrefix;
     }
 
+    /**
+     * @return mixed
+     */
     public function get_action()
     {
         return $this->action;
     }
 
+    /**
+     * @return string
+     */
     public function get_resource()
     {
         $index = strripos($this->bucket, '-');
