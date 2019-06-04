@@ -15,8 +15,8 @@ class Message extends Base
      */
     public function index()
     {
-        // 获取当前用户的消息
-        $list = \app\common\model\Message::where(['status'=>1,'user_id'=>$this->login_user['id']])->order('update_time desc')->select();
+        // 获取所有的消息
+        $list = \app\common\model\Message::where(['status'=>1])->order('update_time desc')->select();
         $unread_array = array();
         $unanswered_array = array();
         foreach ($list as &$item) {
@@ -81,7 +81,7 @@ class Message extends Base
             return $result;
         }
         // 获取当前用户的消息
-        $list = \app\common\model\Message::where(['status'=>1,'user_id'=>$user['id']])->paginate($number);
+        $list = \app\common\model\Message::where(['status'=>1])->paginate($number);
         // 获取 接收人信息
         foreach ($list as &$item) {
             $to_user_id = $item['to_user_id'];
