@@ -3,13 +3,12 @@ namespace app\index\controller;
 
 class User extends Base
 {
+    /**
+     * 用户首页
+     * @return mixed
+     */
     public function index()
     {
-        // 获取当前用户信息
-        $session_username =  session('username');
-        $user = \app\common\model\User::get(['username'=>$session_username]);
-        $this->assign('user',$user);
-
         return $this->fetch();
     }
 
@@ -115,10 +114,6 @@ class User extends Base
      */
     public function set()
     {
-        $session_username = session('username');
-        $user = \app\common\model\User::get(['username'=>$session_username]);
-        $this->assign('user',$user);
-
         return $this->fetch();
     }
 

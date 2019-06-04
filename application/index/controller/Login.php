@@ -12,7 +12,7 @@ class Login extends Controller
     public function index()
     {
         // 获取网站信息
-        $site = \app\common\controller\Site::info('woniu_es');
+        $site = \app\common\controller\Site::info();
         if ($site['code']) {
             return $site;
         }

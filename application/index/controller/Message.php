@@ -1,7 +1,6 @@
 <?php
 namespace app\index\controller;
 
-use app\common\model\CosRegion;
 use app\common\model\MessageRead;
 use app\common\model\MessageReply;
 
@@ -20,31 +19,34 @@ class Message extends Base
         $unread_array = array();
         $unanswered_array = array();
         foreach ($list as &$item) {
-            // 获取 接收人信息
+            // 截取消息简介
+            $description = preg_replace("/<.*?>/is","",$item['content']); // 过滤html标记
+            $item['description'] = substr($description,0,200);
+            // 获取消息接收人信息
             $to_user_id = $item['to_user_id'];
-            $to_user_info = \app\common\model\User::get($to_user_id);
-            if (empty($to_user_info)) {
+            $get_to_user = \app\common\model\User::get($to_user_id);
+            if (empty($get_to_user)) {
                 $result = array('code'=>1,'message'=>'to_user_id not exits');
                 return $result;
             }
-            $item['to_user_username'] = $to_user_info['username'];
-            $item['to_user_nickname'] = $to_user_info['nickname'];
-            $item['to_user_avatar'] = $to_user_info['avatar'];
-            $get_user = \app\common\model\User::get($item['user_id']);
-            $item['user'] = $get_user;
-            $description = preg_replace("/<.*?>/is","",$item['content']); // 过滤html标记
-            $item['description'] = substr($description,0,200);
-            // 判断消息是否已读
-            $login_user = $this->login_user;
-            $message_read = MessageRead::get(['message_id'=>$item['id'],'user_id'=>$login_user['id']]);
+            $item['to_user'] = $get_to_user;
+            // 获取消息发送人信息
+            $get_send_user = \app\common\model\User::get($item['user_id']);
+            if (empty($get_send_user)) {
+                $result = array('code'=>1,'message'=>'send_user_id not exits');
+                return $result;
+            }
+            $item['send_user'] = $get_send_user;
+            // 判断当前登录的用户是否已读消息
+            $message_read = MessageRead::get(['message_id'=>$item['id'],'user_id'=>$this->user_login['id']]);
             if (empty($message_read)) {
                 $unread_array[] = $item;
                 $item['read'] = 0;
             } else {
                 $item['read'] = 1;
             }
-            // 判断消息是否已回复
-            $message_reply = MessageReply::get(['message_id'=>$item['id']]);
+            // 判断当前登录的用户是否已回复消息
+            $message_reply = MessageReply::get(['message_id'=>$item['id'],'user_id'=>$this->user_login['id']]);
             if (empty($message_reply)) {
                 $unanswered_array[] = $item;
                 $item['reply'] = 0;
@@ -73,26 +75,23 @@ class Message extends Base
      */
     public function manage($number = 10)
     {
-        // 获取当前用户信息
-        $session_username = session('username');
-        $user = \app\common\model\User::get(['username'=>$session_username]);
-        if (empty($user)) {
-            $result = array('code'=>1,'message'=>'user not exits');
-            return $result;
-        }
-        // 获取当前用户的消息
+        // 获取所有的消息
         $list = \app\common\model\Message::where(['status'=>1])->paginate($number);
-        // 获取 接收人信息
         foreach ($list as &$item) {
-            $to_user_id = $item['to_user_id'];
-            $to_user_info = \app\common\model\User::get($to_user_id);
-            if (empty($user)) {
+            // 获取消息接收人信息
+            $get_to_user = \app\common\model\User::get($item['to_user_id']);
+            if (empty($get_to_user)) {
                 $result = array('code'=>1,'message'=>'to_user_id not exits');
                 return $result;
             }
-            $item['to_user_username'] = $to_user_info['username'];
-            $item['to_user_nickname'] = $to_user_info['nickname'];
-            $item['to_user_avatar'] = $to_user_info['avatar'];
+            $item['to_user'] = $get_to_user;
+            // 获取消息发送人信息
+            $get_send_user = \app\common\model\User::get($item['user_id']);
+            if (empty($get_send_user)) {
+                $result = array('code'=>1,'message'=>'send_user_id not exits');
+                return $result;
+            }
+            $item['send_user'] = $get_send_user;
         }
 
         $this->assign('list',$list);
@@ -114,27 +113,12 @@ class Message extends Base
     public function read($id)
     {
         // 获取cos 配置信息
-        $cos = \app\common\model\Cos::get(['code'=>'tencent']);
-        if (empty($cos)) {
-            $result = array('code'=>1,'message'=>'cos 配置信息不存在');
-            return $result;
+        $cos_info = \app\common\controller\Cos::info();
+        if ($cos_info['code']) {
+            return $cos_info;
         }
-        $app_id = $cos['app_id'];
-        $bucket_name = $cos['bucket_name'];
-        $bucket = $bucket_name . '-' . $app_id;
-        $cos['bucket'] = $bucket;
-        $region_id = $cos['region_id'];
-        // 获取cos 地域信息
-        $cos_region = CosRegion::get($region_id);
-        if (empty($cos_region)) {
-            $result = array('code'=>1,'message'=>'cos 地域信息不存在');
-            return $result;
-        }
-        // $xml_domain = $cos_region['xml_domain'];
-        $json_domain = $cos_region['json_domain'];
-
-        $cos['region_name'] = $cos_region['name'];
-        $this->assign('cos',$cos);
+        $cos_json_url = 'https://' . $cos_info['data']['cos']['bucket'] . '.' . $cos_info['data']['region']['json_domain'];
+        $this->assign('cos',$cos_info['data']);
 
         $message = \app\common\model\Message::get($id);
         if (empty($message)) {
@@ -143,23 +127,13 @@ class Message extends Base
         }
         $this->assign('message',$message);
 
-        // 当前登录的用户
-        $session_username = session('username');
-        $user = \app\common\model\User::get(['username'=>$session_username]);
-        if (empty($user)) {
-            $result = array('code'=>1,'message'=>'user_id not exits');
-            return $result;
-        }
-        $this->assign('user',$user);
-
-        // 发送人信息
+        // 获取发送人信息
         $send_user = \app\common\model\User::get($message['user_id']);
         if (empty($send_user)) {
             $result = array('code'=>1,'message'=>'user_id not exits');
             return $result;
         }
         $this->assign('send_user',$send_user);
-
         // 获取接收人信息
         $to_user = \app\common\model\User::get($message['to_user_id']);
         if (empty($to_user)) {
@@ -172,10 +146,9 @@ class Message extends Base
         $message_file = \app\common\model\MessageFile::where(['message_id'=>$message['id'],'status'=>1])->order('sort desc')->select();
         if (!empty($message_file)) {
             foreach ($message_file as $item) {
-                $file_id = $item['file_id'];
-                $cos_file = \app\common\model\CosFile::get($file_id);
+                $cos_file = \app\common\model\CosFile::get($item['file_id']);
                 if (!empty($cos_file)) {
-                    $files_array[] = array('url'=>'https://' . $bucket . '.' . $json_domain . $cos_file['url'],'name'=>$cos_file['name']);
+                    $files_array[] = array('url'=>$cos_json_url . $cos_file['url'],'name'=>$cos_file['name']);
                 }
             }
         }
@@ -198,7 +171,7 @@ class Message extends Base
                         $file_id = $item['file_id'];
                         $cos_file = \app\common\model\CosFile::get($file_id);
                         if (!empty($cos_file)) {
-                            $files_array[] = array('url'=>'https://' . $bucket . '.' . $json_domain . $cos_file['url'],'name'=>$cos_file['name']);
+                            $files_array[] = array('url'=>$cos_json_url . $cos_file['url'],'name'=>$cos_file['name']);
                         }
                     }
                 }
@@ -211,7 +184,7 @@ class Message extends Base
         $message_read = new MessageRead();
         $message_read_info = $message_read->get(['message_id'=>$id]);
         if (empty($message_read_info)) {
-            $read_data_array = array('message_id'=>$id,'user_id'=>$this->login_user['id'],'status'=>1);
+            $read_data_array = array('message_id'=>$id,'user_id'=>$this->user_login['id'],'status'=>1);
             $message_read_save = $message_read->allowField(true)->save($read_data_array);
             if (!$message_read_save) {
                 $result = array('code'=>1,'message'=>'save message read fail');
@@ -321,6 +294,7 @@ class Message extends Base
         if ($cos_info['code']) {
             return $cos_info;
         }
+        $cos_json_url = 'https://' . $cos_info['data']['cos']['bucket'] . '.' . $cos_info['data']['region']['json_domain'];
         $this->assign('cos',$cos_info['data']);
         // 获取消息信息
         $message = \app\common\model\Message::get($id);
@@ -353,7 +327,7 @@ class Message extends Base
                 $file_id = $item['file_id'];
                 $cos_file = \app\common\model\CosFile::get($file_id);
                 if (!empty($cos_file)) {
-                    $files_array[] = array('url'=>'https://' . $cos_info['data']['cos']['bucket'] . '.' . $cos_info['data']['region']['json_domain'] . $cos_file['url'],'name'=>$cos_file['name']);
+                    $files_array[] = array('url'=>$cos_json_url . $cos_file['url'],'name'=>$cos_file['name']);
                 }
             }
         }
@@ -376,7 +350,7 @@ class Message extends Base
                         $file_id = $item['file_id'];
                         $cos_file = \app\common\model\CosFile::get($file_id);
                         if (!empty($cos_file)) {
-                            $files_array[] = array('url'=>'https://' . $cos_info['data']['cos']['bucket'] . '.' . $cos_info['data']['region']['json_domain'] . $cos_file['url'],'name'=>$cos_file['name']);
+                            $files_array[] = array('url'=>$cos_json_url . $cos_file['url'],'name'=>$cos_file['name']);
                         }
                     }
                 }
@@ -401,8 +375,10 @@ class Message extends Base
         if ($cos_info['code']) {
             return $cos_info;
         }
+        $cos_json_url = 'https://' . $cos_info['data']['cos']['bucket'] . '.' . $cos_info['data']['region']['json_domain'];
         $this->assign('cos',$cos_info['data']);
 
+        // 获取消息信息
         $message = \app\common\model\Message::get($id);
         if (empty($message)) {
             $result = array('code'=>1,'message'=>'message not exits');
@@ -433,7 +409,7 @@ class Message extends Base
                 $file_id = $item['file_id'];
                 $cos_file = \app\common\model\CosFile::get($file_id);
                 if (!empty($cos_file)) {
-                    $files_array[] = array('url'=>'https://' . $cos_info['data']['cos']['bucket'] . '.' . $cos_info['data']['region']['json_domain'] . $cos_file['url'],'name'=>$cos_file['name']);
+                    $files_array[] = array('url'=>$cos_json_url . $cos_file['url'],'name'=>$cos_file['name']);
                 }
             }
         }
@@ -456,7 +432,7 @@ class Message extends Base
                         $file_id = $item['file_id'];
                         $cos_file = \app\common\model\CosFile::get($file_id);
                         if (!empty($cos_file)) {
-                            $files_array[] = array('url'=>'https://' . $cos_info['data']['cos']['bucket'] . '.' . $cos_info['data']['region']['json_domain'] . $cos_file['url'],'name'=>$cos_file['name']);
+                            $files_array[] = array('url'=>$cos_json_url . $cos_file['url'],'name'=>$cos_file['name']);
                         }
                     }
                 }

@@ -37,22 +37,9 @@ class Cos extends Base
     {
         // 接收post 数据
         $post_data = $this->request->post();
-
-        // 获取腾讯云存储配置信息
-        $cos = new \app\common\model\Cos();
-        $cos_info = $cos->get(['code'=>$this->cos_code]);
-        if (empty($cos_info)) {
-            $result = array('code'=>1,'message'=>'腾讯云存储配置信息不存在');
-            return json($result);
-        }
-        // 保存配置信息
-        $save = $cos_info->allowField(true)->save($post_data);
-        if ($save) {
-            $result = array('code'=>0,'message'=>'保存成功');
-        } else {
-            $result = array('code'=>1,'message'=>'保存失败');
-        }
-        return json($result);
+        // 保存数据
+        $cos = \app\common\controller\Cos::update($post_data);
+        return $cos;
     }
 
     /**
