@@ -118,8 +118,9 @@
                             dataType:"json",
                             data:id,
                             success:function(result){
-                                layer.msg(result.message,{icon:1});
-                                location.reload(); // 重新加载页面
+                                layer.msg(result.message,{icon:1},function () {
+                                    location.reload(); // 重新加载页面
+                                });
                             },
                             error:function(result){
                                 layer.msg(result.message,{icon:2});

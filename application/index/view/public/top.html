@@ -29,10 +29,10 @@
         <li class="layui-nav-item" lay-unselect>
             <a href="javascript:;">
                 <cite>
-                    {if $user.nickname==''}
-                    {$user.username}
+                    {if $user_login.nickname==''}
+                    {$user_login.username}
                     {else}
-                    {$user.nickname}
+                    {$user_login.nickname}
                     {/if}
                 </cite>
             </a>

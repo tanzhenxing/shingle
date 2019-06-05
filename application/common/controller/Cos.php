@@ -63,7 +63,7 @@ class Cos extends Controller
             $result = array('code'=>1,'message'=>'cos 配置信息不存在');
             return $result;
         }
-        $cos['bucket'] = $cos['name'] . '-' . $cos['app_id']; // 云存储桶名称
+        $cos['bucket'] = $cos['bucket_name'] . '-' . $cos['app_id']; // 云存储桶名称
         // 获取cos 地域信息
         $cos_region = CosRegion::get($cos['region_id']);
         if (empty($cos_region)) {
@@ -75,30 +75,90 @@ class Cos extends Controller
     }
 
     /**
-     * 更新腾讯云存储配置信息
+     * 保存数据记录
+     * @param $data
+     * @return array
+     */
+    public static function save($data)
+    {
+        // 获取数据
+        $query = array('code'=>$data['code']);
+        $obj = new \app\common\model\Cos();
+        $get_data = $obj->get($query);
+        if (empty($get_data)) { // 新建记录
+            $result = static::create($data);
+        } else { // 更新记录
+            unset($data['code']);
+            $data['id'] = $get_data['id'];
+            $result = static::update($data);
+        }
+        // 返回保存成功结果
+        return $result;
+    }
+
+    /**
+     * 创建数据记录
+     * @param $data
+     * @return array
+     */
+    public static function create($data)
+    {
+        // 验证数据
+        if (isset($data['id'])) {
+            $result = array('code'=>1,'message'=>'id 已经存在');
+            return $result;
+        }
+        $validate = new \app\common\validate\Cos();
+        if (!$validate->check($data)) {
+            $result = array('code'=>1,'message'=>$validate->getError());
+            return $result;
+        }
+        // 保存数据
+        $obj = new \app\common\model\Cos();
+        $save = $obj->allowField(true)->save($data);
+        // 返回保存失败结果
+        if (!$save) {
+            $result = array('code'=>1,'message'=>'保存数据失败');
+            return $result;
+        }
+        // 重新获取最新的数据
+        $query = array('code'=>$data['code']);
+        $result_data = $obj->get($query);
+        // 返回保存成功结果
+        $result = array('code'=>0,'message'=>'保存数据成功','data'=>$result_data);
+        return $result;
+    }
+
+    /**
+     * 更新数据记录
      * @param $data
      * @return array
      */
     public static function update($data)
     {
-        if (empty($data)) {
-            $result = array('code'=>1,'message'=>'post data is null');
+        // 验证数据
+        if (!isset($data['id']) or !is_int($data['id'])) {
+            $result = array('code'=>1,'message'=>'id: '.$data['id'] .' 无效');
             return $result;
         }
-        // 获取腾讯云存储配置信息
-        $cos = new \app\common\model\Cos();
-        $cos_info = $cos->get(['code'=>static::$cos_code]);
-        if (empty($cos_info)) {
-            $result = array('code'=>1,'message'=>'腾讯云存储配置信息不存在');
+        // 获取数据
+        $obj = new \app\common\model\Cos();
+        $get_data = $obj->get($data['id']);
+        if (empty($get_data)) { // 新建记录
+            $result = array('code'=>1,'message'=>'id：'.$data['id'] .' 不存在');
             return $result;
         }
-        // 保存配置信息
-        $save = $cos_info->allowField(true)->save($data);
-        if ($save) {
-            $result = array('code'=>0,'message'=>'保存腾讯云存储配置信息成功');
-        } else {
-            $result = array('code'=>1,'message'=>'保存腾讯云存储配置信息失败');
+        // 保存数据
+        $save = $obj->allowField(true)->save($data);
+        // 返回保存失败结果
+        if (!$save) {
+            $result = array('code'=>1,'message'=>'保存数据失败','data'=>$data);
+            return $result;
         }
+        // 重新获取最新的数据
+        $result_data = $obj->get($data['id']);
+        // 返回保存成功结果
+        $result = array('code'=>0,'message'=>'保存数据成功','data'=>$result_data);
         return $result;
     }
 

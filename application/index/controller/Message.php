@@ -8,7 +8,6 @@ class Message extends Base
 {
     /**
      * 消息列表
-     * @param $number
      * @return array|mixed
      * @throws
      */
@@ -204,14 +203,14 @@ class Message extends Base
     {
         // 获取用户信息
         $session_username = session('username');
-        $user = \app\common\model\User::where(['status'=>1,'type'=>1])->select();
-        $user_array = array();
-        foreach ($user as $item) {
+        $user_list = \app\common\model\User::where(['status'=>1,'type'=>1])->select();
+        $user_list_array = array();
+        foreach ($user_list as $item) {
             if ($item['username'] != $session_username) { // 从记录中去掉当前用户
-                $user_array[] = $item;
+                $user_list_array[] = $item;
             }
         }
-        $this->assign('user',$user_array);
+        $this->assign('user_list',$user_list_array);
 
         // 获取cos 配置信息
         $cos_info = \app\common\controller\Cos::info();
@@ -231,17 +230,12 @@ class Message extends Base
     {
         // 接收post数据
         $post_data = $this->request->post();
-        // 验证数据
-        $validate = new \app\index\validate\Message();
-        if (!$validate->check($post_data)) {
-            $result = array('code'=>1,'message'=>$validate->getError());
-            return $result;
-        }
         // 获取当前用户id
         $user_id = $this->user_login['id'];
 
         // 保存消息到数据
         $message_array = array('user_id'=>$user_id,'to_user_id'=>$post_data['to_user_id'],'title'=>$post_data['title'],'content'=>$post_data['content'],'status'=>1);
+
         $message = new \app\common\model\Message();
         $save = $message->allowField(true)->save($message_array);
         if (!$save) {

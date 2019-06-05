@@ -35,7 +35,8 @@
         "ext-fileinfo": "*",
         "ext-exif": "*",
         "topthink/framework": "5.1.*",
-        "qcloud/cos-sdk-v5": "^1.3"
+        "qcloud/cos-sdk-v5": "^1.3",
+        "ramsey/uuid": "^3.8"
     },
     "autoload": {
         "psr-4": {

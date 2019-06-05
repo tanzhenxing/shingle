@@ -16,7 +16,7 @@ class CosFile extends Validate
 	    'user_id'=>'require|integer',
         'name'=>'require',
         'url'=>'require',
-        'url_md5'=>'require|alphaNum',
+        'url_md5'=>'require|alphaNum|length:32',
         'status'=>'require|in:0,1'
     ];
     

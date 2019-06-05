@@ -6,6 +6,10 @@ namespace Composer\Autoload;
 
 class ComposerStaticInitdd55d5aeec11d1d3a249cd7428976a3b
 {
+    public static $files = array (
+        '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
+    );
+
     public static $prefixLengthsPsr4 = array (
         't' => 
         array (
@@ -17,7 +21,12 @@ class ComposerStaticInitdd55d5aeec11d1d3a249cd7428976a3b
         ),
         'S' => 
         array (
+            'Symfony\\Polyfill\\Ctype\\' => 23,
             'Symfony\\Component\\EventDispatcher\\' => 34,
+        ),
+        'R' => 
+        array (
+            'Ramsey\\Uuid\\' => 12,
         ),
     );
 
@@ -30,9 +39,17 @@ class ComposerStaticInitdd55d5aeec11d1d3a249cd7428976a3b
         array (
             0 => __DIR__ . '/../..' . '/application',
         ),
+        'Symfony\\Polyfill\\Ctype\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
+        ),
         'Symfony\\Component\\EventDispatcher\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/event-dispatcher',
+        ),
+        'Ramsey\\Uuid\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/ramsey/uuid/src',
         ),
     );
 

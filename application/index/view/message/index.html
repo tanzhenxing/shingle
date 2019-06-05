@@ -22,14 +22,14 @@
                         {volist name='list' id='vo'}
                         <div class="caller-item">
                             <div class="caller-img caller-fl" style="width: 50px;">
-                                <img height="50" width="50" src="{if $vo.user.avatar==''}/static/images/avatar.jpg{else /}{$vo.user.avatar}{/if}" />
-                                <br /><span>{$vo.user.nickname}</span>
+                                <img height="50" width="50" src="{if $vo.send_user.avatar==''}/static/images/avatar.jpg{else /}{$vo.send_user.avatar}{/if}" />
+                                <br /><span>{$vo.send_user.nickname}</span>
                             </div>
                             <div class="caller-main caller-fl">
                                 <p><strong>{$vo.title}</strong></p>
                                 <p class="caller-adds">{$vo.description|raw}</p>
                                 <div class="caller-iconset">
-                                    To User : {$vo.to_user_nickname} / Time: {$vo.update_time}
+                                    To User : {$vo.to_user.nickname} / Time: {$vo.update_time}
                                 </div>
                             </div>
                             <button class="layui-btn layui-btn-sm caller-fr"  name="read" value="{$vo.id}">
@@ -45,14 +45,14 @@
                         {volist name='unread' id='vo'}
                         <div class="caller-item">
                             <div class="caller-img caller-fl" style="width: 50px;">
-                                <img height="50" width="50" src="{if $vo.user.avatar==''}/static/images/avatar.jpg{else /}{$vo.user.avatar}{/if}" />
-                                <br /><span>{$vo.user.nickname}</span>
+                                <img height="50" width="50" src="{if $vo.send_user.avatar==''}/static/images/avatar.jpg{else /}{$vo.send_user.avatar}{/if}" />
+                                <br /><span>{$vo.send_user.nickname}</span>
                             </div>
                             <div class="caller-main caller-fl">
                                 <p><strong>{$vo.title}</strong></p>
                                 <p class="caller-adds">{$vo.description|raw}</p>
                                 <div class="caller-iconset">
-                                    To User : {$vo.to_user_nickname} / Time: {$vo.update_time}
+                                    To User : {$vo.to_user.nickname} / Time: {$vo.update_time}
                                 </div>
                             </div>
                             <button class="layui-btn layui-btn-sm caller-fr"  name="read" value="{$vo.id}">
@@ -68,14 +68,14 @@
                         {volist name='unanswered' id='vo'}
                         <div class="caller-item">
                             <div class="caller-img caller-fl" style="width: 50px;">
-                                <img height="50" width="50" src="{if $vo.user.avatar==''}/static/images/avatar.jpg{else /}{$vo.user.avatar}{/if}" />
-                                <br /><span>{$vo.user.nickname}</span>
+                                <img height="50" width="50" src="{if $vo.send_user.avatar==''}/static/images/avatar.jpg{else /}{$vo.send_user.avatar}{/if}" />
+                                <br /><span>{$vo.send_user.nickname}</span>
                             </div>
                             <div class="caller-main caller-fl">
                                 <p><strong>{$vo.title}</strong></p>
                                 <p class="caller-adds">{$vo.description|raw}</p>
                                 <div class="caller-iconset">
-                                    To User : {$vo.to_user_nickname} / Time: {$vo.update_time}
+                                    To User : {$vo.to_user.nickname} / Time: {$vo.update_time}
                                 </div>
                             </div>
                             <button class="layui-btn layui-btn-sm caller-fr"  name="read" value="{$vo.id}">

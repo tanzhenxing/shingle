@@ -71,7 +71,7 @@
             <label class="layui-form-label">To User</label>
             <div class="layui-input-inline">
                 <select name="to_user_id" lay-verify="required">
-                    {volist name="user" id="vo"}
+                    {volist name="user_list" id="vo"}
                     <option value="{$vo.id}">{$vo.username}</option>
                     {/volist}
                 </select>
@@ -163,8 +163,8 @@
             , $ = layui.$;
 
         // 上传附件
-        var Bucket = '{$cos.bucket}';
-        var Region = '{$cos.region_name}';
+        var Bucket = '{$cos.cos.bucket}';
+        var Region = '{$cos.region.name}';
         var cos = new COS({
             FileParallelLimit: 5,
             ChunkParallelLimit: 5,
