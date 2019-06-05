@@ -80,7 +80,9 @@ class CosRegion extends Controller
             return $result;
         }
         // 保存数据
-        $save = $obj->allowField(true)->save($data);
+        $save_array = $data;
+        unset($save_array['id']);
+        $save = $get_data->allowField(true)->save($save_array);
         // 返回保存失败结果
         if (!$save) {
             $result = array('code'=>1,'message'=>'保存数据失败','data'=>$data);

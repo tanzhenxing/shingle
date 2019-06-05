@@ -7,6 +7,7 @@
 <div class="layui-container app-body" style="margin-top: 10px;background: #ffffff;">
     <div style="height: 20px;"></div>
     <form class="layui-form layui-form-pane" action="">
+        <input type="hidden" name="status" value="1">
         <div class="layui-form-item">
             <label class="layui-form-label">User type</label>
             <div class="layui-input-inline">
@@ -71,10 +72,11 @@
                 console.log(res);
                 //上传完毕回调
                 if (res.code === 0) {
-                    layer.msg('上传成功',{icon:1});
                     $('#avatar').val(res.data.url); // 显示上传之后的url
                     document.getElementById('my_avatar').src = res.data.url;
-                    layer.closeAll();
+                    layer.msg('上传成功',{icon:1},function () {
+                        layer.closeAll();
+                    });
                 } else {
                     layer.msg('上传失败',{icon:2});
                 }

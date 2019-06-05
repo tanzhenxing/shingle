@@ -10,13 +10,13 @@
         <div class="layui-form-item">
             <label class="layui-form-label">username</label>
             <div class="layui-input-inline">
-                <input type="text" autocomplete="off" class="layui-input" value="{$user.username}" disabled style="color: #e2e2e2;background: #FBFBFB">
+                <input type="text" name="username" autocomplete="off" class="layui-input" value="{$data.username}" disabled style="color: #e2e2e2;background: #FBFBFB">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">nickname</label>
             <div class="layui-input-inline">
-                <input type="text" name="nickname" lay-verify="nickname" autocomplete="off" class="layui-input" value="{$user.nickname}">
+                <input type="text" name="nickname" lay-verify="nickname" autocomplete="off" class="layui-input" value="{$data.nickname}">
             </div>
         </div>
         <div class="layui-form-item">
@@ -28,8 +28,7 @@
         <div class="layui-form-item">
             <div style="width: 100px;float: left;padding-right: 15px;">
                 <input type="hidden" id="avatar" name="avatar" value="">
-                <input type="hidden" name="id" value="{$user.id}">
-                <img height="100" width="100" id="my_avatar" src="{if $user.avatar==''}/static/images/avatar.jpg{else /}{$user.avatar}{/if}" />
+                <img height="100" width="100" id="my_avatar" src="{if $data.avatar==''}/static/images/avatar.jpg{else /}{$data.avatar}{/if}" />
             </div>
             <div style="float: left;padding-top: 50px;">
                 <button type="button" class="layui-form-label" id="upload_avatar">
@@ -82,7 +81,7 @@
 
         // 提交表单数据
         form.on('submit(edit)',function (data) {
-            var url = "/index/user/update";
+            var url = "/index/user/save";
             $.post(url,data.field,function (result) {
                 if(result.code === 0){
                     layer.msg(result.message,{icon:1},function () {

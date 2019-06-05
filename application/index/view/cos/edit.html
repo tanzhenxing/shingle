@@ -7,11 +7,12 @@
 <div class="layui-container app-body" style="margin-top: 10px;background: #ffffff;">
     <div style="height: 20px;"></div>
     <form class="layui-form layui-form-pane" action="">
+        <input type="hidden" name="code" value="{$cos.cos.code}">
         <div class="layui-form-item">
             <label class="layui-form-label">region</label>
             <div class="layui-input-inline">
                 <select name="region_id" lay-filter="region">
-                    <option value="{$my_region.id}">{$my_region.title}|{$my_region.short_name}|{$my_region.name}</option>
+                    <option value="{$cos.region.id}">{$cos.region.title}|{$cos.region.short_name}|{$cos.region.name}</option>
                     {volist name="region" id="vo"}
                     <option value="{$vo.id}">{$vo.title}|{$vo.short_name}|{$vo.name}</option>
                     {/volist}
@@ -21,25 +22,25 @@
         <div class="layui-form-item">
             <label class="layui-form-label">app_id</label>
             <div class="layui-input-inline">
-                <input type="text" name="app_id" autocomplete="off" class="layui-input" value="{$cos.app_id}">
+                <input type="text" name="app_id" autocomplete="off" class="layui-input" value="{$cos.cos.app_id}">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">secret_id</label>
             <div class="layui-input-inline">
-                <input type="text" name="secret_id" autocomplete="off" class="layui-input" value="{$cos.secret_id}">
+                <input type="text" name="secret_id" autocomplete="off" class="layui-input" value="{$cos.cos.secret_id}">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">secret_key</label>
             <div class="layui-input-inline">
-                <input type="text" name="secret_key" autocomplete="off" class="layui-input" value="{$cos.secret_key}">
+                <input type="text" name="secret_key" autocomplete="off" class="layui-input" value="{$cos.cos.secret_key}">
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">bucket_name</label>
             <div class="layui-input-inline">
-                <input type="text" name="bucket_name" autocomplete="off" class="layui-input" value="{$cos.bucket_name}">
+                <input type="text" name="bucket_name" autocomplete="off" class="layui-input" value="{$cos.cos.bucket_name}">
             </div>
         </div>
         <div class="layui-form-item" style="margin-top: 20px;">
@@ -59,7 +60,7 @@
             , $ = layui.$;
 
         form.on('submit(edit)',function (data) {
-            var url = "/index/cos/update";
+            var url = "/index/cos/save";
             $.post(url,data.field,function (result) {
                 if(result.code === 0){
                     layer.msg(result.message,{icon:1});

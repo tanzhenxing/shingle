@@ -100,6 +100,7 @@ class User extends Controller
             $result = array('code'=>1,'message'=>$validate->getError());
             return $result;
         }
+        $data['password'] = password_hash($data['password'],PASSWORD_BCRYPT);
         // 保存数据
         $obj = new \app\common\model\User();
         $save = $obj->allowField(true)->save($data);
@@ -128,6 +129,19 @@ class User extends Controller
             $result = array('code'=>1,'message'=>'id: '.$data['id'] .' 无效');
             return $result;
         }
+        // 密码为空，则不修改
+        if (empty($data['password'])) {
+            unset($data['password']);
+        } else {
+            $data['password'] = password_hash($data['password'],PASSWORD_BCRYPT);
+        }
+        if (empty($data['nickname'])) {
+            unset($data['nickname']);
+        }
+        // 头像为空，则不修改
+        if (empty($data['avatar'])) {
+            unset($data['avatar']);
+        }
         // 获取数据
         $obj = new \app\common\model\User();
         $get_data = $obj->get($data['id']);
@@ -136,7 +150,9 @@ class User extends Controller
             return $result;
         }
         // 保存数据
-        $save = $obj->allowField(true)->save($data);
+        $save_array = $data;
+        unset($save_array['id']);
+        $save = $get_data->allowField(true)->save($save_array);
         // 返回保存失败结果
         if (!$save) {
             $result = array('code'=>1,'message'=>'保存数据失败','data'=>$data);
@@ -146,6 +162,27 @@ class User extends Controller
         $result_data = $obj->get($data['id']);
         // 返回保存成功结果
         $result = array('code'=>0,'message'=>'保存数据成功','data'=>$result_data);
+        return $result;
+    }
+
+    /**
+     * 删除记录
+     * @param $id
+     * @return array
+     */
+    public static function delete($id)
+    {
+        $get_data = \app\common\model\User::get($id);
+        if (empty($get_data)) {
+            $result = array('code'=>1,'message'=>'id not exist');
+            return $result;
+        }
+        $delete = $get_data->delete($id);
+        if ($delete) {
+            $result = array('code'=>0,'message'=>'delete success');
+        } else {
+            $result = array('code'=>1,'message'=>'delete fail');
+        }
         return $result;
     }
 

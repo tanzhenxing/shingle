@@ -7,7 +7,7 @@
 <div class="layui-container app-body" style="margin-top: 10px;background: #ffffff;">
     <div style="height: 20px;"></div>
     <form class="layui-form layui-form-pane" action="">
-        <input type="hidden" name="id" value="{$user_login.id}">
+        <input type="hidden" name="username" value="{$user_login.username}">
         <div class="layui-form-item">
             <label class="layui-form-label">nickname</label>
             <div class="layui-input-inline">
@@ -71,7 +71,7 @@
         });
 
         form.on('submit(edit)',function (data) {
-            var url = "/index/user/update";
+            var url = "/index/user/save";
             $.post(url,data.field,function (result) {
                 if(result.code === 0){
                     layer.msg(result.message,{icon:1},function () {

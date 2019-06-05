@@ -16,19 +16,10 @@ class Site extends Base
      * 更新网站信息
      * @return array
      */
-    public function update()
+    public function save()
     {
         $post_data = $this->request->post();
-        if (empty($post_data['thumb'])) {
-            unset($post_data['thumb']);
-        }
-        if (empty($post_data['logo'])) {
-            unset($post_data['logo']);
-        }
-        if (empty($post_data['icon'])) {
-            unset($post_data['icon']);
-        }
-        $site_update = \app\common\controller\Site::update($post_data);
+        $site_update = \app\common\controller\Site::save($post_data);
         return $site_update;
     }
 

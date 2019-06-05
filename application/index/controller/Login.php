@@ -49,4 +49,5 @@ class Login extends Controller
         $result = array('code'=>1, 'message'=>'访问的网址:[ ' . $request_url .' ] 不存在');
         return json($result);
     }
+
 }

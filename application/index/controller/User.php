@@ -24,7 +24,6 @@ class User extends Base
         $this->assign('list',$list);
         $count = $list->total();
         $this->assign('count', $count);
-
         $page = $list->render();
         $this->assign('page', $page);
         return $this->fetch();
@@ -51,7 +50,6 @@ class User extends Base
         $this->assign('list',$list);
         $count = $list->total();
         $this->assign('count', $count);
-
         $page = $list->render();
         $this->assign('page', $page);
         return $this->fetch();
@@ -83,28 +81,8 @@ class User extends Base
     {
         // 接收post数据
         $post_data = $this->request->post();
-        // 验证post数据是否有效
-        $validate = new \app\index\validate\User();
-        if (!$validate->check($post_data)) {
-            $result = array('code'=>1,'message'=>$validate->getError());
-            return $result;
-        }
-        $user = new \app\common\model\User();
-        $get_user = $user->get(['username'=>$post_data['username']]);
-        if (!empty($get_user)) {
-            $result = array('code'=>1,'message'=>'username 已经存在');
-            return $result;
-        }
-        // 加密明文密码
-        $post_data['password'] = password_hash($post_data['password'],PASSWORD_BCRYPT);
-        $post_data['status'] = 1;
-        // 保存用户信息
-        $save = $user->allowField(true)->save($post_data);
-        if ($save) {
-            $result = array('code'=>0,'message'=>'创建会员成功');
-        } else {
-            $result = array('code'=>1,'message'=>'创建会员失败');
-        }
+        // 保存数据
+        $result = \app\common\controller\User::save($post_data);
         return $result;
     }
 
@@ -124,44 +102,9 @@ class User extends Base
      */
     public function edit($id)
     {
-        $user = \app\common\model\User::get($id);
-        $this->assign('user',$user);
-
+        $data = \app\common\model\User::get($id);
+        $this->assign('data',$data);
         return $this->fetch();
-    }
-
-    /**
-     * 更新用户信息
-     * @return array
-     */
-    public function update()
-    {
-        $post_data = $this->request->post();
-        // 密码为空，则不修改
-        if (empty($post_data['password'])) {
-            unset($post_data['password']);
-        } else {
-            $post_data['password'] = password_hash($post_data['password'],PASSWORD_BCRYPT);
-        }
-        // 头像为空，则不修改
-        if (empty($post_data['avatar'])) {
-            unset($post_data['avatar']);
-        }
-        $user = \app\common\model\User::get($post_data['id']);
-
-        if (empty($user)) {
-            $result = array('code'=>1,'message'=>'user not exist');
-            return $result;
-        }
-        // 保存用户信息到数据库
-        unset($post_data['id']);
-        $update_user = $user->allowField(true)->save($post_data);
-        if ($update_user) {
-            $result = array('code'=>0,'message'=>'update success');
-        } else {
-            $result = array('code'=>1,'message'=>'update fail');
-        }
-        return $result;
     }
 
     /**
@@ -171,17 +114,7 @@ class User extends Base
      */
     public function delete($id)
     {
-        $user = \app\common\model\User::get($id);
-        if (empty($user)) {
-            $result = array('code'=>1,'message'=>'user not exist');
-            return $result;
-        }
-        $delete_user = $user->delete($id);
-        if ($delete_user) {
-            $result = array('code'=>0,'message'=>'delete the user success');
-        } else {
-            $result = array('code'=>1,'message'=>'delete the user fail');
-        }
+        $result = \app\common\controller\User::delete($id);
         return $result;
     }
 

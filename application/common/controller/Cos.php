@@ -101,7 +101,7 @@ class Cos extends Controller
      * @param $data
      * @return array
      */
-    public static function create($data)
+    private static function create($data)
     {
         // 验证数据
         if (isset($data['id'])) {
@@ -134,10 +134,10 @@ class Cos extends Controller
      * @param $data
      * @return array
      */
-    public static function update($data)
+    private static function update($data)
     {
         // 验证数据
-        if (!isset($data['id']) or !is_int($data['id'])) {
+        if (!isset($data['id']) or !is_integer($data['id'])) {
             $result = array('code'=>1,'message'=>'id: '.$data['id'] .' 无效');
             return $result;
         }
@@ -149,7 +149,9 @@ class Cos extends Controller
             return $result;
         }
         // 保存数据
-        $save = $obj->allowField(true)->save($data);
+        $save_array = $data;
+        unset($save_array['id']);
+        $save = $get_data->allowField(true)->save($save_array);
         // 返回保存失败结果
         if (!$save) {
             $result = array('code'=>1,'message'=>'保存数据失败','data'=>$data);

@@ -7,6 +7,7 @@
 <div class="layui-container app-body" style="margin-top: 10px;background: #ffffff;">
     <div style="height: 20px;"></div>
     <form class="layui-form layui-form-pane" action="">
+        <input type="hidden" name="code" value="{$site.code}">
         <div class="layui-form-item">
             <label class="layui-form-label">site name</label>
             <div class="layui-input-inline">
@@ -142,7 +143,7 @@
         });
 
         form.on('submit(edit)',function (data) {
-            var url = "/index/site/update";
+            var url = "/index/site/save";
             $.post(url,data.field,function (result) {
                 if(result.code === 0){
                     layer.msg(result.message,{icon:1});

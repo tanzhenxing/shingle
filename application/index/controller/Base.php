@@ -17,7 +17,7 @@ class Base extends Controller
         // 获取网站信息
         $get_site_info = \app\common\controller\Site::info();
         if ($get_site_info['code']) {
-            echo json($get_site_info);
+            echo json_encode($get_site_info,JSON_UNESCAPED_UNICODE);
             exit;
         }
         $site_info = $get_site_info['data'];
@@ -26,7 +26,7 @@ class Base extends Controller
         // 用户登录检测
         $user_login_check = \app\common\controller\User::loginCheck();
         if ($user_login_check['code']) {
-            echo json($user_login_check);
+            echo json_encode($user_login_check,JSON_UNESCAPED_UNICODE);
             $this->redirect('/index/login/index'); // 跳转到登录页
             exit;
         }

@@ -533,6 +533,8 @@ class Message extends Base
             }
         }
         $this->assign('message',$message);
+        $total = count($message);
+        $this->assign('total',$total);
         return $this->fetch();
     }
 

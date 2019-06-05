@@ -12,7 +12,7 @@ class CosKey extends Base
         // 获取cos 配置信息
         $cos_info = \app\common\controller\Cos::info();
         if ($cos_info['code']) {
-            return $cos_info;
+            return json($cos_info);
         }
         // 计算临时秘钥
         $get_cos_key = new \app\common\controller\CosKey();

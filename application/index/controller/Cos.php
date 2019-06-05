@@ -16,13 +16,13 @@ class Cos extends Base
         $cos_region_list = CosRegion::where(['status'=>1])->select();
         if (empty($cos_region_list)) {
             $result = array('code'=>1,'message'=>'腾讯云存储地域信息不存在');
-            return $result;
+            return json($result);
         }
         $this->assign('region',$cos_region_list);
         // 获取腾讯云存储配置信息
         $cos_info = \app\common\controller\Cos::info();
         if ($cos_info['code']) {
-            return $cos_info;
+            return json($cos_info);
         }
         $this->assign('cos',$cos_info['data']);
 
@@ -33,12 +33,12 @@ class Cos extends Base
      * 更新腾讯云存储配置信息
      * @return array
      */
-    public function update()
+    public function save()
     {
         // 接收post 数据
         $post_data = $this->request->post();
         // 保存数据
-        $cos = \app\common\controller\Cos::update($post_data);
+        $cos = \app\common\controller\Cos::save($post_data);
         return $cos;
     }
 
