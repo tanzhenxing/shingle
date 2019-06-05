@@ -13,7 +13,7 @@ class MessageReplyFile extends Controller
     public static function save($data)
     {
         // 获取数据
-        $query = array('message_id'=>$data['message_id'],'file_id'=>$data['file_id']);
+        $query = array('reply_id'=>$data['reply_id'],'file_id'=>$data['file_id']);
         $obj = new \app\common\model\MessageReplyFile();
         $get_data = $obj->get($query);
         if (empty($get_data)) { // 新建记录
@@ -53,7 +53,7 @@ class MessageReplyFile extends Controller
             return $result;
         }
         // 重新获取最新的数据
-        $query = array('message_id'=>$data['message_id'],'file_id'=>$data['file_id']);
+        $query = array('reply_id'=>$data['reply_id'],'file_id'=>$data['file_id']);
         $result_data = $obj->get($query);
         // 返回保存成功结果
         $result = array('code'=>0,'message'=>'保存数据成功','data'=>$result_data);

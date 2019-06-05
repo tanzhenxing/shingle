@@ -1,182 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    {include file="public/header" title="edit Subject" /}
-    <style>
-        a {
-            color: #0071ff;
-        }
-        .float-right {
-            float: right;
-        }
-        #form input[type="text"] {
-            width: 40px;
-            padding: 2px;
-            vertical-align: middle;
-        }
-        #form input[type="file"] {
-            vertical-align: middle;
-        }
-
-        .file-list {
-            margin-top: 20px;
-            width: 100%;
-        }
-
-        .file-list {
-            width: 960px;
-            border-collapse: collapse;
-        }
-
-        .file-name {
-            display: inline-block;
-            width: 310px;
-            text-overflow: ellipsis;
-            white-space: nowrap
-        }
-
-        .file-item td {
-            border: 1px solid #ccc;
-            padding: 5px 10px;
-            font-size: 12px;
-            line-height: 20px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap
-        }
-
-        .file-progress {
-            position: relative;
-            display: inline-block;
-            width: 100px;
-            height: 6px;
-            background: #ddd;
-            vertical-align: middle;
-            margin-right: 5px;
-        }
-
-        .file-progress-loaded {
-            position: absolute;
-            display: inline-block;
-            height: 6px;
-            background: #0071ff;
-        }
-    </style>
+    {include file="public/header" title="edit message" /}
 </head>
 <body>
 <div class="layui-container app-body" style="margin-top: 10px;background: #ffffff;">
     <div style="height: 20px;"></div>
-    <img src="{$send_user.avatar}" height="25" width="25" /> {$send_user.nickname} Send To User : <img src="{$to_user.avatar}" height="25" width="25" /> {$to_user.nickname}  <span style="float: right;">Time:{$message.create_time}</span>
-    <table class="layui-table">
-        <tbody>
-        <tr>
-            <td>Title</td>
-            <td>{$message.title}</td>
-        </tr>
-        <tr>
-            <td>Content</td>
-            <td>{$message.content|raw}</td>
-        </tr>
-        <tr>
-            <td>Attached Files</td>
-            <td>
-                {volist name="files" id="vo"}
-                <a href="{$vo.url}" >{$vo.name}</a> <br />
-                {/volist}
-            </td>
-        </tr>
-        </tbody>
-    </table>
-
-    {volist name="reply" id="list"}
-    <table class="layui-table">
-        <tbody>
-        <tr>
-            <td>Reply</td>
-            <td>{$list.nickname}</td>
-        </tr>
-        <tr>
-            <td>Content</td>
-            <td>{$list.content|raw}</td>
-        </tr>
-        <tr>
-            <td>Attached Files</td>
-            <td>
-                {volist name="list['files']" id="vo"}
-                <a href="{$vo.url}" >{$vo.name}</a> <br />
-                {/volist}
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    {/volist}
-
-    <div style="height: 20px;"></div>
     <form class="layui-form layui-form-pane" action="">
-        <input type="hidden" name="user_id" autocomplete="off" class="layui-input" value="{$user.id}">
-        <input type="hidden" name="message_id" autocomplete="off" class="layui-input" value="{$message.id}">
+        <input type="hidden" name="user_id" value="{$message.user_id}">
+        <input type="hidden" name="to_user_id" value="{$message.to_user_id}">
+        <input type="hidden" name="uuid" value="{$message.uuid}">
+        <input type="hidden" name="status" value="{$message.status}">
         <div class="layui-form-item">
-            <label class="layui-form-label" style="height: 45px;">Reply</label>
+            <label class="layui-form-label">title</label>
+            <div class="layui-input-inline">
+                <input type="text" name="title" autocomplete="off" class="layui-input" value="{$message.title}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="height: 45px;">content</label>
             <div class="layui-input-block">
-                <textarea id="content" name="content" style="display: none;"></textarea>
+                <textarea id="content" name="content" style="display: none;">{$message.content}</textarea>
             </div>
         </div>
-        <div class="layui-form-item">
-            <hr />
-            <div id="app">
-                <div class="layui-form-label" style="width: 200px;margin-right: 20px;">Upload Attached File</div>
-                <div class="layui-input-block">
-                    <div id="form">
-                        <div class="float-right">total {{total}} files</div>
-                        <input type="file" value="Select file" multiple @change="selectedFile"  placeholder="Select file">
-                    </div>
-                </div>
-                <div style="height: 10px;clear: both;"></div>
-                <table class="layui-table">
-                    <colgroup>
-                        <col style="width:20%;">
-                        <col style="width:30%;">
-                        <col style="width:10%;">
-                        <col style="width:10%;">
-                        <col style="width:30%;">
-                    </colgroup>
-                    <tr class="file-item">
-                        <td>filename</td>
-                        <td>filepath</td>
-                        <td>size</td>
-                        <td>progress</td>
-                        <td class="file-action">handle</td>
-                    </tr>
-                    <tr class="file-item" v-for="item in list">
-                        <td>{{getUploadFileName(item.Key)}}</td>
-                        <td><span class="file-name">{{item.Key}}</span></td>
-                        <td>{{formatSize(item.size)}}</td>
-                        <td>
-                    <span class="file-progress" v-if="item.state==='uploading'">
-                        <span class="file-progress-loaded" :style="'width:'+item.percent*100+'%'"></span>
-                    </span>
-                            <span v-if="item.state==='success'">success</span>
-                            <span v-else-if="item.state==='waiting'">waiting</span>
-                            <span v-else-if="item.state==='checking'">checking({{parseInt(item.hashPercent*100)}}%)</span>
-                            <span v-else-if="item.state==='paused'">paused, upload{{formatSize(item.loaded)}}</span>
-                            <span v-else-if="item.state==='canceled'">canceled</span>
-                            <span v-else>{{formatSize(item.speed)}}/s, upload{{formatSize(item.loaded)}} {{parseInt(item.percent*100)}}%</span>
-                        </td>
-                        <td class="file-action">
-                            <a v-if="['waiting','checking','uploading'].includes(item.state)" href="javascript:void(0)" @click="pauseTask(item)">paused</a>
-                            <a v-if="['error','paused'].includes(item.state)" href="javascript:void(0)" @click="restartTask(item)">start</a>
-                            <a v-if="item.state!=='canceled'" href="javascript:void(0)" @click="cancelTask(item)">delete</a>
-                        </td>
-                    </tr>
-                    <tr class="file-item" v-if="!list.length">
-                        <td colspan="5" align="center">no files</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-
         <div class="layui-form-item" style="margin-top: 20px;">
-            <button class="layui-btn" lay-submit="" lay-filter="edit" style="width: 100%;">Send</button>
+            <button class="layui-btn" lay-submit="" lay-filter="edit" style="width: 100%;">save</button>
         </div>
     </form>
     <div style="height: 20px;"></div>
@@ -195,8 +43,8 @@
             , $ = layui.$;
 
         // 上传附件
-        var Bucket = '{$cos.bucket}';
-        var Region = '{$cos.region_name}';
+        var Bucket = '{$cos.cos.bucket}';
+        var Region = '{$cos.region.name}';
         var cos = new COS({
             FileParallelLimit: 5,
             ChunkParallelLimit: 5,
@@ -315,7 +163,7 @@
 
         // 提交表单
         form.on('submit(edit)',function (data) {
-            var url = "/index/message/update";
+            var url = "/index/message/save";
             // 获取上传的附件列表
             var files_arr = [];
             var list = document.getElementsByClassName("file-name");

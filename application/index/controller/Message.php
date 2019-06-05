@@ -1,8 +1,12 @@
 <?php
 namespace app\index\controller;
 
+use app\common\controller\CosFile;
+use app\common\controller\MessageFile;
 use app\common\model\MessageRead;
 use app\common\model\MessageReply;
+use app\common\model\MessageReplyFile;
+use Ramsey\Uuid\Uuid;
 
 class Message extends Base
 {
@@ -26,14 +30,14 @@ class Message extends Base
             $get_to_user = \app\common\model\User::get($to_user_id);
             if (empty($get_to_user)) {
                 $result = array('code'=>1,'message'=>'to_user_id not exits');
-                return $result;
+                return json($result);
             }
             $item['to_user'] = $get_to_user;
             // 获取消息发送人信息
             $get_send_user = \app\common\model\User::get($item['user_id']);
             if (empty($get_send_user)) {
                 $result = array('code'=>1,'message'=>'send_user_id not exits');
-                return $result;
+                return json($result);
             }
             $item['send_user'] = $get_send_user;
             // 判断当前登录的用户是否已读消息
@@ -118,7 +122,7 @@ class Message extends Base
         }
         $cos_json_url = 'https://' . $cos_info['data']['cos']['bucket'] . '.' . $cos_info['data']['region']['json_domain'];
         $this->assign('cos',$cos_info['data']);
-
+        // 获取消息信息
         $message = \app\common\model\Message::get($id);
         if (empty($message)) {
             $result = array('code'=>1,'message'=>'message not exits');
@@ -164,7 +168,7 @@ class Message extends Base
                 $reply['nickname'] = $reply_user['nickname'];
                 // 获取回复附件
                 $files_array = array();
-                $message_file = \app\common\model\MessageReplyFile::where(['reply_id'=>$reply['id'],'status'=>1])->order('sort desc')->select();
+                $message_file = MessageReplyFile::where(['reply_id'=>$reply['id'],'status'=>1])->order('sort desc')->select();
                 if (!empty($message_file)) {
                     foreach ($message_file as $item) {
                         $file_id = $item['file_id'];
@@ -191,6 +195,11 @@ class Message extends Base
             }
         }
 
+        // 获取uuid
+        $uuid4 = Uuid::uuid4();
+        $uuid = $uuid4->getHex();
+        $this->assign('uuid',$uuid);
+
         return $this->fetch();
     }
 
@@ -206,7 +215,7 @@ class Message extends Base
         $user_list = \app\common\model\User::where(['status'=>1,'type'=>1])->select();
         $user_list_array = array();
         foreach ($user_list as $item) {
-            if ($item['username'] != $session_username) { // 从记录中去掉当前用户
+            if ($item['username'] != $session_username) { // 从记录中去掉当前登录的用户
                 $user_list_array[] = $item;
             }
         }
@@ -219,12 +228,18 @@ class Message extends Base
         }
         $this->assign('cos',$cos_info['data']);
 
+        // 获取uuid
+        $uuid4 = Uuid::uuid4();
+        $uuid = $uuid4->getHex();
+        $this->assign('uuid',$uuid);
+
         return $this->fetch();
     }
 
     /**
-     * 保存消息
+     * 保存数据
      * @return array
+     * @throws
      */
     public function save()
     {
@@ -233,16 +248,14 @@ class Message extends Base
         // 获取当前用户id
         $user_id = $this->user_login['id'];
 
-        // 保存消息到数据
-        $message_array = array('user_id'=>$user_id,'to_user_id'=>$post_data['to_user_id'],'title'=>$post_data['title'],'content'=>$post_data['content'],'status'=>1);
-
-        $message = new \app\common\model\Message();
-        $save = $message->allowField(true)->save($message_array);
-        if (!$save) {
+        // 保存消息数据
+        $message_array = array('user_id'=>$user_id,'to_user_id'=>$post_data['to_user_id'],'title'=>$post_data['title'],'content'=>$post_data['content'],'uuid'=>$post_data['uuid'],'status'=>1);
+        $message_save = \app\common\controller\Message::save($message_array);
+        if ($message_save['code']) {
             $result = array('code'=>1,'message'=>'save message fail');
             return $result;
         }
-        $message_id = $message->id;
+        $message_id = $message_save['data']['id'];
 
         // 保存附件信息到数据库
         $cos_file_array = array();
@@ -439,72 +452,15 @@ class Message extends Base
     }
 
     /**
-     * 保存更新信息
-     * @return array
-     */
-    public function update()
-    {
-        $post_data = $this->request->post();
-        // 验证post数据
-
-        // 保存 message_reply 信息
-        $reply_array = array('user_id'=>$post_data['user_id'],'message_id'=>$post_data['message_id'],'content'=>$post_data['content'],'status'=>1);
-        $message_reply = new MessageReply();
-        $reply_save = $message_reply->allowField(true)->save($reply_array);
-        if (!$reply_save) {
-            $result = array('code'=>1,'message'=>'save message reply fail');
-            return $result;
-        }
-        $message_reply_id = $message_reply->id;
-
-        // 保存附件信息到数据库
-        $cos_file_array = array();
-        if (!empty($post_data['files'])) {
-            foreach ($post_data['files'] as $item) {
-                $str_len = strlen($item);
-                $file_name_len = $str_len - 28;
-                $file_name = substr($item,28,$file_name_len);
-                $url_md5 = md5($item);
-                $cos_file_data = array('user_id'=>$this->user_login['id'],'name'=>$file_name,'url'=>$item,'url_md5'=>$url_md5,'status'=>1);
-                $save_cos_file = CosFile::save($cos_file_data);
-                if ($save_cos_file['code']) {
-                    return $save_cos_file;
-                }
-                $cos_file_array[] = $save_cos_file['data'];
-            }
-        }
-
-        // 保存消息回复附件信息
-        $message_file_array = array();
-        foreach ($cos_file_array as $cos_file) {
-            $message_file_data = array('reply_id'=>$message_reply_id,'file_id'=>$cos_file['id'],'sort'=>$cos_file['id'],'status'=>1);
-            $message_file = MessageReplyFile::save($message_file_data);
-            if ($message_file['code']) {
-                return $message_file;
-            }
-            $message_file_array[] = $message_file_data;
-        }
-
-        // 返回结果
-        $result = array('code'=>0,'message'=>'save message success','data'=>$reply_array);
-        return $result;
-
-    }
-
-    /**
      * 消息 软删除
      * @param $id
      * @return array
      */
-    public function delete($id)
+    public function softDelete($id)
     {
-        $message = \app\common\model\Message::get($id);
-        $save = $message->save(['status'=>0]);
-        if ($save) {
-            $result = array('code'=>0,'message'=>'delete message success');
-        } else {
-            $result = array('code'=>1,'message'=>'delete message fail');
-        }
+        $data = \app\common\model\Message::get($id);
+        $update_array = array('id'=>$id,'status'=>0,'uuid'=>$data['uuid']);
+        $result = \app\common\controller\Message::save($update_array);
         return $result;
     }
 
@@ -518,7 +474,7 @@ class Message extends Base
     {
         $this->assign('keywords',$keywords);
         // 获取消息列表
-        $message = \app\common\model\Message::where('title','like',$keywords.'%')->select();
+        $message = \app\common\model\Message::where('title','like','%' . $keywords .'%')->select();
         foreach ($message as &$item) {
             $get_user = \app\common\model\User::get($item['user_id']);
             $item['user'] = $get_user;

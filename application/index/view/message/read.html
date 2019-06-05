@@ -112,8 +112,10 @@
 
     <div style="height: 20px;"></div>
     <form class="layui-form layui-form-pane" action="">
-        <input type="hidden" name="user_id" autocomplete="off" class="layui-input" value="{$user.id}">
-        <input type="hidden" name="message_id" autocomplete="off" class="layui-input" value="{$message.id}">
+        <input type="hidden" name="user_id" value="{$user_login.id}">
+        <input type="hidden" name="message_id" value="{$message.id}">
+        <input type="hidden" name="uuid" value="{$uuid}">
+        <input type="hidden" name="status" value="1">
         <div class="layui-form-item">
             <label class="layui-form-label" style="height: 45px;">Reply</label>
             <div class="layui-input-block">
@@ -175,7 +177,7 @@
         </div>
 
         <div class="layui-form-item" style="margin-top: 20px;">
-            <button class="layui-btn" lay-submit="" lay-filter="edit" style="width: 100%;">Send</button>
+            <button class="layui-btn" lay-submit="" lay-filter="create" style="width: 100%;">Send</button>
         </div>
     </form>
     <div style="height: 20px;"></div>
@@ -194,8 +196,8 @@
             , $ = layui.$;
 
         // 上传附件
-        var Bucket = '{$cos.bucket}';
-        var Region = '{$cos.region_name}';
+        var Bucket = '{$cos.cos.bucket}';
+        var Region = '{$cos.region.name}';
         var cos = new COS({
             FileParallelLimit: 5,
             ChunkParallelLimit: 5,
@@ -313,8 +315,8 @@
         });
 
         // 提交表单
-        form.on('submit(edit)',function (data) {
-            var url = "/index/message/update";
+        form.on('submit(create)',function (data) {
+            var url = "/index/message_reply/save";
             // 获取上传的附件列表
             var files_arr = [];
             var list = document.getElementsByClassName("file-name");
