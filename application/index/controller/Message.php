@@ -184,14 +184,12 @@ class Message extends Base
         $this->assign('reply',$message_reply);
 
         // 保存已读记录
-        $message_read = new MessageRead();
-        $message_read_info = $message_read->get(['message_id'=>$id]);
-        if (empty($message_read_info)) {
+        $get_message_read = MessageRead::get(['message_id'=>$id,'user_id'=>$this->user_login['id']]);
+        if (empty($get_message_read)) {
             $read_data_array = array('message_id'=>$id,'user_id'=>$this->user_login['id'],'status'=>1);
-            $message_read_save = $message_read->allowField(true)->save($read_data_array);
-            if (!$message_read_save) {
-                $result = array('code'=>1,'message'=>'save message read fail');
-                return $result;
+            $message_read = \app\common\controller\MessageRead::save($read_data_array);
+            if ($message_read['code']) {
+                return $message_read;
             }
         }
 
