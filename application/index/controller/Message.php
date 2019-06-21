@@ -12,13 +12,24 @@ class Message extends Base
 {
     /**
      * 消息列表
-     * @return array|mixed
+     * @param null $type
+     * @return mixed
      * @throws
      */
-    public function index()
+    public function index($type = null)
     {
-        // 获取所有的消息
-        $list = \app\common\model\Message::where(['status'=>1])->order('update_time desc')->select();
+        // 获取消息分类
+        if (empty($type)) {
+            $list = \app\common\model\Message::where(['status'=>1])->order('update_time desc')->select();
+        } else {
+            $message_category = \app\common\model\MessageCategory::get(['unique_code'=>$type]);
+            if (empty($message_category)) {
+                $result = array('code'=>1,'message'=>'case category is null');
+                return $result;
+            }
+            $list = \app\common\model\Message::where(['status'=>1,'category_id'=>$message_category['id']])->order('update_time desc')->select();
+        }
+
         $unread_array = array();
         $unanswered_array = array();
         foreach ($list as &$item) {
@@ -208,6 +219,10 @@ class Message extends Base
      */
     public function create()
     {
+        // 获取消息分类
+        $message_category = \app\common\model\MessageCategory::where(['status'=>1])->select();
+        $this->assign('category',$message_category);
+
         // 获取用户信息
         $session_username = session('username');
         $user_list = \app\common\model\User::where(['status'=>1,'type'=>1])->select();
@@ -247,7 +262,7 @@ class Message extends Base
         $user_id = $this->user_login['id'];
 
         // 保存消息数据
-        $message_array = array('user_id'=>$user_id,'to_user_id'=>$post_data['to_user_id'],'title'=>$post_data['title'],'content'=>$post_data['content'],'uuid'=>$post_data['uuid'],'status'=>1);
+        $message_array = array('category_id'=>$post_data['category_id'],'user_id'=>$user_id,'to_user_id'=>$post_data['to_user_id'],'title'=>$post_data['title'],'content'=>$post_data['content'],'uuid'=>$post_data['uuid'],'status'=>1);
         $message_save = \app\common\controller\Message::save($message_array);
         if ($message_save['code']) {
             $result = array('code'=>1,'message'=>'save message fail');

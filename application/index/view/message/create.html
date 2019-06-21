@@ -70,6 +70,17 @@
         <input type="hidden" name="uuid" value="{$uuid}">
         <input type="hidden" name="status" value="1">
         <div class="layui-form-item">
+            <label class="layui-form-label">Type</label>
+            <div class="layui-input-inline">
+                <select name="category_id" lay-verify="required">
+                    {volist name="category" id="vo"}
+                    <option value="{$vo.id}">{$vo.title}</option>
+                    {/volist}
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
             <label class="layui-form-label">To User</label>
             <div class="layui-input-inline">
                 <select name="to_user_id" lay-verify="required">

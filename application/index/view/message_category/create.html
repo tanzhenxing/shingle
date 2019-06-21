@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/header" title="create" /}
+</head>
+<body>
+<div class="layui-container app-body" style="margin-top: 10px;background: #ffffff;">
+    <div style="height: 20px;"></div>
+    <form class="layui-form layui-form-pane" action="">
+        <div class="layui-form-item">
+            <label class="layui-form-label">title</label>
+            <div class="layui-input-block">
+                <input type="text" name="title" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">unique_code</label>
+            <div class="layui-input-block">
+                <input type="text" name="unique_code" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">status</label>
+            <div class="layui-input-inline">
+                <input type="checkbox" name="status" id="status" lay-skin="switch" lay-filter="switch_status" lay-text="open|close" checked value="1" >
+            </div>
+        </div>
+        <div class="layui-form-item" style="margin-top: 20px;">
+            <button class="layui-btn" lay-submit="" lay-filter="create" style="width: 100%;">save</button>
+        </div>
+    </form>
+    <div style="height: 20px;"></div>
+</div>
+
+<script>
+    layui.use(['layer','form','upload'],function () {
+        var layer = layui.layer
+            , form = layui.form
+            , upload = layui.upload
+            , $ = layui.$;
+
+        var file_id,file_url;
+        $('button').on('click',function () {
+            file_id = this.id;
+        });
+
+        // 上传文件
+        upload.render({
+            elem: '.upload_file'
+            ,url: "{:url('api/v2/Upload/file')}" //上传接口
+            ,accept: 'file'
+            ,before: function(){
+                layer.load(); //上传loading
+            }
+            ,done: function(res, index, upload){
+                //上传完毕回调
+                if (res.code === 0) {
+                    file_url = res.data.url; // 显示上传之后的url
+                    $('#upload_'+file_id).val(file_url); // 显示上传之后的url
+                    document.getElementById('my_'+file_id).src = file_url;
+                    layer.msg('上传成功',{icon:1},function () {
+                        layer.closeAll();
+                    });
+                } else {
+                    layer.msg('上传失败',{icon:2});
+                }
+            }
+            ,error: function(res){
+                layer.msg('上传异常',{icon:2});
+            }
+        });
+
+        //监听开关状态
+        var my_status;
+        form.on('switch(switch_status)', function(data){
+            my_status = this.checked ? 'true' : 'false';
+        });
+
+        form.on('submit(create)',function (data) {
+            var url = "{:url('admin/MessageCategory/save')}";
+            switch (my_status) {
+                case 'true':
+                    data.field.status = 1;
+                    break;
+                case 'false':
+                    data.field.status = 0;
+                    break;
+                default:
+                    data.field.status = 1;
+                    break;
+            }
+            layer.load();
+            $.post(url,data.field,function (result) {
+                if (result.message === undefined) {
+                    layer.msg('create fail',{icon:2},function () {
+                        layer.closeAll();
+                    });
+                }
+                if(result.code === 0){
+                    layer.msg(result.message,{icon:1},function () {
+                        layer.closeAll();
+                        var index = parent.layer.getFrameIndex(window.name); // 获得frame索引
+                        parent.layer.close(index);  //关闭当前frame
+                    });
+                }else{
+                    layer.msg(result.message,{icon:2},function () {
+                        layer.closeAll();
+                    });
+                }
+            });
+            return false; // 阻止表单跳转
+        });
+    });
+</script>
+{include file="public/footer" /}
+</body>
+</html>

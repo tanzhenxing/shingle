@@ -122,15 +122,15 @@
                 <textarea id="content" name="content" style="display: none;"></textarea>
             </div>
         </div>
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+            <legend>Upload Attached File</legend>
+        </fieldset>
         <div class="layui-form-item">
-            <hr />
             <div id="app">
-                <div class="layui-form-label" style="width: 200px;margin-right: 20px;">Upload Attached File</div>
-                <div class="layui-input-block">
-                    <div id="form">
-                        <div class="float-right">total {{total}} files</div>
-                        <input type="file" value="Select file" multiple @change="selectedFile"  placeholder="Select file">
-                    </div>
+                <div id="form">
+                    <input type="file" id="browse_file" multiple @change="selectedFile" style="visibility:hidden;">
+                    <button type="button" id="file_button" class="layui-btn layui-btn-primary" style="float: left;" onclick="browse_file.click()"><i class="layui-icon layui-icon-upload"></i> Selected File</button>
+                    <span style="float: right;width: 100px;">total {{total}} files</span>
                 </div>
                 <div style="height: 10px;clear: both;"></div>
                 <table class="layui-table">

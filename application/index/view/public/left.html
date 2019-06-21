@@ -7,9 +7,19 @@
         <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
             <li data-name="home" class="layui-nav-item layui-nav-itemed">
                 <a href="javascript:;" lay-tips="Case List" lay-direction="2">
-                    <i class="layui-icon layui-icon-senior"></i>
+                    <i class="layui-icon layui-icon-survey"></i>
                     <cite>Case List</cite>
                 </a>
+                <dl class="layui-nav-child">
+                    <dd>
+                        <a lay-href="/index/message/index">All Case</a>
+                    </dd>
+                    {volist name='message_category' id='vo'}
+                    <dd>
+                        <a lay-href="/index/message/index/type/{$vo.unique_code}">{$vo.title}</a>
+                    </dd>
+                    {/volist}
+                </dl>
             </li>
             {if $user_login.type==0}
             <li data-name="set" class="layui-nav-item">
@@ -35,6 +45,9 @@
                     </dd>
                     <dd>
                         <a lay-href="{:url('index/FileExtension/index')}">File Type</a>
+                    </dd>
+                    <dd>
+                        <a lay-href="{:url('index/MessageCategory/index')}">Case Category</a>
                     </dd>
                 </dl>
             </li>

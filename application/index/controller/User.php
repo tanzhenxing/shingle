@@ -6,9 +6,13 @@ class User extends Base
     /**
      * 用户首页
      * @return mixed
+     * @throws
      */
     public function index()
     {
+        $message_category = \app\common\model\MessageCategory::where(['status'=>1])->select();
+        $this->assign('message_category',$message_category);
+
         return $this->fetch();
     }
 
