@@ -9,13 +9,15 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<input type="file" value="选择上传文件" multiple @change="selectedFile">
 
 <div class="page">
     <h1>COS 上传队列</h1>
     <div id="app">
         <form id="form">
             <div class="float-right">共{{total}}个文件</div>
-            <input type="file" value="选择上传文件" multiple @change="selectedFile">
+            <input type="file" id="browse_file"  multiple @change="selectedFile" style="visibility:hidden;width: 1px;">
+            <input type="button" id="file_button" value="selected file" onclick="browse_file.click()">
         </form>
         <table class="file-list">
             <colgroup>

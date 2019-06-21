@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {include file="public/header" title="file type list" /}
+</head>
+<body>
+<div class="layui-fluid" id="LAY-app-message">
+    <div class="layui-card">
+        <div class="layui-tab layui-tab-brief">
+            <ul class="layui-tab-title">
+                <li class="layui-this">file type list</li>
+            </ul>
+            <div class="layui-tab-content">
+                <div class="layui-tab-item layui-show">
+                    <div class="LAY-app-message-btns" style="margin-bottom: 10px;">
+                        <button class="layui-btn" id="create">create</button>
+                    </div>
+                    <div class="layui-form">
+                        <table class="layui-table" lay-skin="line" lay-filter="site">
+                            <thead>
+                            <tr>
+                                <th>id</th>
+                                <th>extension</th>
+                                <th>status</th>
+                                <th>handle</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {volist name='list' id='vo'}
+                            <tr>
+                                <td>{$vo.id}</td>
+                                <td>{$vo.extension}</td>
+                                <td><input type="checkbox" name="status" id="sortDelete" lay-skin="switch" lay-filter="switch_status" lay-text="开启|关闭" value="{$vo.id}" {if ($vo.status==1)}checked{/if}></td>
+                                <td>
+                                    <button class="layui-btn layui-btn-xs" name="edit" value="{$vo.id}"><i class="layui-icon layui-icon-edit"></i>edit</button>
+                                    <button class="layui-btn layui-btn-danger layui-btn-xs" name="delete" value="{$vo.id}"><i class="layui-icon layui-icon-delete"></i>delete</button>
+                                </td>
+                            </tr>
+                            {/volist}
+                            </tbody>
+                        </table>
+                        <div class="layui-box layui-laypage">{$page|raw}</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    layui.use(['laypage', 'layer','form','table'], function() {
+        var laypage = layui.laypage
+            , layer = layui.layer
+            , form = layui.form
+            , table = layui.table
+            , $ = layui.$;
+
+        // 新增 记录
+        $('#create').on("click",function () {
+            layer.open({
+                type: 2,
+                title: 'create',
+                shadeClose: true,
+                shade: 0.8,
+                area: ['90%', '90%'],
+                content: ['{:url("admin/FileExtension/create")}','no'],
+                end: function(){
+                    location.reload(); // 重新加载页面
+                }
+            });
+        });
+
+        //监听开关状态
+        form.on('switch(switch_status)', function(data){
+            var my_status = this.checked ? 'true' : 'false';
+            var status,status_content;
+            switch (my_status) {
+                case 'true':
+                    status= 1;
+                    status_content = 'open';
+                    break;
+                case 'false':
+                    status = 0;
+                    status_content = 'close';
+                    break;
+                default:
+                    break;
+            }
+            var id = data.value;
+
+            layer.open({
+                title: status_content
+                ,content: '请确认，你真的要' + status_content
+                ,btn: ['yes']
+                ,btnAlign: 'c'
+                ,shade: [0.8, '#000000']
+                ,shadeClose: true
+                ,closeBtn:2
+                ,yes:function (logoutBtn, layero) {
+                    url = "{:url('admin/FileExtension/sortDelete')}?id=" + id;
+                    $.ajax({
+                        url:url,
+                        type:"post",
+                        contentType:"application/json",
+                        dataType:"json",
+                        data:JSON.stringify({id:id,status:status}), // 对象转json
+                        success:function(result){
+                            layer.msg(result.message,{icon:1},function () {
+                                location.reload(); // 重新加载页面
+                            });
+                        },
+                        error:function(result){
+                            layer.msg(result.message,{icon:2});
+                        }
+                    });
+                    layer.close(logoutBtn);
+                }
+                ,cancel:function () {
+                    layer.msg('cancel',{icon:2});
+                }
+            });
+        });
+
+        $('button').on('click',function () {
+            var dataName = this.name
+                , id = this.value
+                ,url;
+            switch (dataName) {
+                case 'edit':
+                    url = "{:url('admin/FileExtension/edit')}?id=" + id;
+                    layer.open({
+                        type: 2,
+                        title: 'edit',
+                        shadeClose: true,
+                        shade: 0.8,
+                        area: ['90%', '90%'],
+                        content: [url,'no'],
+                        end: function(){
+                            // layer.msg('已经增加',{icon:1,time:3000});
+                            location.reload(); // 重新加载页面
+                        }
+                    });
+                    break;
+                case 'delete':
+                    layer.open({
+                        title: 'delete'
+                        ,content: '请确认，你真的要删除吗？'
+                        ,btn: ['yes']
+                        ,btnAlign: 'c'
+                        ,shade: [0.8, '#000000']
+                        ,shadeClose: true
+                        ,closeBtn:2
+                        ,yes:function (logoutBtn, layero) {
+                            url = "{:url('admin/FileExtension/delete')}?id=" + id;
+                            $.ajax({
+                                url:url,
+                                type:"delete",
+                                contentType:"application/json",
+                                dataType:"json",
+                                data:JSON.stringify({id:id}),
+                                success:function(result){
+                                    layer.msg(result.message,{icon:1},function () {
+                                        location.reload(); // 重新加载页面
+                                    });
+                                },
+                                error:function(result){
+                                    layer.msg(result.message,{icon:2});
+                                }
+                            });
+                            layer.close(logoutBtn);
+                        }
+                        ,cancel:function () {
+                            layer.msg('cancel',{icon:2});
+                        }
+                    });
+                    break;
+                default:
+                    break;
+            }
+        });
+    });
+</script>
+</body>
+</html>

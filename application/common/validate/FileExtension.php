@@ -13,8 +13,8 @@ class FileExtension extends Validate
      * @var array
      */	
 	protected $rule = [
-	    'extension'=>'require|alphaNum',
-        'status'=>'require|in:0,1'
+	    'extension'=>'alphaNum',
+        'status'=>'in:0,1'
     ];
     
     /**
