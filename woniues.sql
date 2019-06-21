@@ -2,8 +2,7 @@
 SQLyog Ultimate v12.09 (64 bit)
 MySQL - 5.5.53 : Database - chat
 *********************************************************************
-*/
-
+*/
 
 /*!40101 SET NAMES utf8 */;
 
@@ -28,13 +27,12 @@ CREATE TABLE `ly_cos` (
   `update_time` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `ly_cos` */
 
 LOCK TABLES `ly_cos` WRITE;
 
-insert  into `ly_cos`(`id`,`region_id`,`app_id`,`secret_id`,`secret_key`,`bucket_name`,`code`,`status`,`create_time`,`update_time`) values (1,8,1251279962,'AKIDU9lDeB2GG7reLsAeq9GI9rQ2ndsKE7yH','fQYgw59X24zzxUWcgs4EdF8ixEUU2yuo','hk','tencent',1,1543079134,1559708567);
 
 UNLOCK TABLES;
 
@@ -51,7 +49,7 @@ CREATE TABLE `ly_cos_file` (
   `update_time` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `url_md5` (`url_md5`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `ly_cos_file` */
 
@@ -74,7 +72,7 @@ CREATE TABLE `ly_cos_region` (
   `update_time` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `ly_cos_region` */
 
@@ -110,7 +108,7 @@ CREATE TABLE `ly_file_extension` (
   `update_time` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `extension` (`extension`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `ly_file_extension` */
 
@@ -145,6 +143,8 @@ insert  into `ly_file_extension`(`id`,`extension`,`status`,`create_time`,`update
 insert  into `ly_file_extension`(`id`,`extension`,`status`,`create_time`,`update_time`) values (27,'csv',1,0,0);
 insert  into `ly_file_extension`(`id`,`extension`,`status`,`create_time`,`update_time`) values (28,'wps',1,0,0);
 insert  into `ly_file_extension`(`id`,`extension`,`status`,`create_time`,`update_time`) values (29,'ico',1,0,0);
+insert  into `ly_file_extension`(`id`,`extension`,`status`,`create_time`,`update_time`) values (30,'js',1,1561105219,1561105219);
+insert  into `ly_file_extension`(`id`,`extension`,`status`,`create_time`,`update_time`) values (31,'css',1,1561105230,1561105230);
 
 UNLOCK TABLES;
 
@@ -152,6 +152,7 @@ UNLOCK TABLES;
 
 CREATE TABLE `ly_message` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `category_id` int(11) NOT NULL COMMENT '分类id',
   `user_id` int(11) NOT NULL COMMENT '用户编号',
   `to_user_id` int(11) NOT NULL COMMENT '目标用户id',
   `title` varchar(200) NOT NULL COMMENT '标题',
@@ -164,11 +165,34 @@ CREATE TABLE `ly_message` (
   UNIQUE KEY `uuid` (`uuid`),
   KEY `user_id` (`user_id`),
   KEY `title` (`title`(191))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `ly_message` */
 
 LOCK TABLES `ly_message` WRITE;
+
+
+UNLOCK TABLES;
+
+/*Table structure for table `ly_message_category` */
+
+CREATE TABLE `ly_message_category` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `title` char(100) NOT NULL,
+  `unique_code` char(50) NOT NULL,
+  `status` tinyint(1) NOT NULL,
+  `create_time` int(11) NOT NULL,
+  `update_time` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_code` (`unique_code`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
+
+/*Data for the table `ly_message_category` */
+
+LOCK TABLES `ly_message_category` WRITE;
+
+insert  into `ly_message_category`(`id`,`title`,`unique_code`,`status`,`create_time`,`update_time`) values (2,'Problem Case','problem_case',1,0,0);
+insert  into `ly_message_category`(`id`,`title`,`unique_code`,`status`,`create_time`,`update_time`) values (3,'Digital File','digital_file',1,0,1561107159);
 
 UNLOCK TABLES;
 
@@ -184,11 +208,12 @@ CREATE TABLE `ly_message_file` (
   `update_time` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `message_file` (`message_id`,`file_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `ly_message_file` */
 
 LOCK TABLES `ly_message_file` WRITE;
+
 
 UNLOCK TABLES;
 
@@ -203,11 +228,12 @@ CREATE TABLE `ly_message_read` (
   `update_time` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `message_user_id` (`message_id`,`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `ly_message_read` */
 
 LOCK TABLES `ly_message_read` WRITE;
+
 
 UNLOCK TABLES;
 
@@ -224,11 +250,12 @@ CREATE TABLE `ly_message_reply` (
   `update_time` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid` (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `ly_message_reply` */
 
 LOCK TABLES `ly_message_reply` WRITE;
+
 
 UNLOCK TABLES;
 
@@ -244,11 +271,12 @@ CREATE TABLE `ly_message_reply_file` (
   `update_time` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `reply_file_id` (`reply_id`,`file_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `ly_message_reply_file` */
 
 LOCK TABLES `ly_message_reply_file` WRITE;
+
 
 UNLOCK TABLES;
 
@@ -267,7 +295,7 @@ CREATE TABLE `ly_site` (
   `update_time` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `ly_site` */
 
@@ -291,7 +319,7 @@ CREATE TABLE `ly_user` (
   `update_time` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `ly_user` */
 
