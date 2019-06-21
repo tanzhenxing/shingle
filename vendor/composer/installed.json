@@ -12,13 +12,7 @@
             "type": "zip",
             "url": "https://api.github.com/repos/guzzle/guzzle3/zipball/0645b70d953bc1c067bbc8d5bc53194706b628d9",
             "reference": "0645b70d953bc1c067bbc8d5bc53194706b628d9",
-            "shasum": "",
-            "mirrors": [
-                {
-                    "url": "https://dl.laravel-china.org/%package%/%reference%.%type%",
-                    "preferred": true
-                }
-            ]
+            "shasum": ""
         },
         "require": {
             "ext-curl": "*",
@@ -116,13 +110,7 @@
             "type": "zip",
             "url": "https://api.github.com/repos/paragonie/random_compat/zipball/84b4dfb120c6f9b4ff7b3685f9b8f1aa365a0c95",
             "reference": "84b4dfb120c6f9b4ff7b3685f9b8f1aa365a0c95",
-            "shasum": "",
-            "mirrors": [
-                {
-                    "url": "https://dl.laravel-china.org/%package%/%reference%.%type%",
-                    "preferred": true
-                }
-            ]
+            "shasum": ""
         },
         "require": {
             "php": "^7"
@@ -169,13 +157,7 @@
             "type": "zip",
             "url": "https://api.github.com/repos/tencentyun/cos-php-sdk-v5/zipball/0454f48629210749ae6316ab317548169dac9d8f",
             "reference": "0454f48629210749ae6316ab317548169dac9d8f",
-            "shasum": "",
-            "mirrors": [
-                {
-                    "url": "https://dl.laravel-china.org/%package%/%reference%.%type%",
-                    "preferred": true
-                }
-            ]
+            "shasum": ""
         },
         "require": {
             "guzzle/guzzle": "~3.7",
@@ -223,13 +205,7 @@
             "type": "zip",
             "url": "https://api.github.com/repos/ramsey/uuid/zipball/d09ea80159c1929d75b3f9c60504d613aeb4a1e3",
             "reference": "d09ea80159c1929d75b3f9c60504d613aeb4a1e3",
-            "shasum": "",
-            "mirrors": [
-                {
-                    "url": "https://dl.laravel-china.org/%package%/%reference%.%type%",
-                    "preferred": true
-                }
-            ]
+            "shasum": ""
         },
         "require": {
             "paragonie/random_compat": "^1.0|^2.0|9.99.99",
@@ -313,13 +289,7 @@
             "type": "zip",
             "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/a77e974a5fecb4398833b0709210e3d5e334ffb0",
             "reference": "a77e974a5fecb4398833b0709210e3d5e334ffb0",
-            "shasum": "",
-            "mirrors": [
-                {
-                    "url": "https://dl.laravel-china.org/%package%/%reference%.%type%",
-                    "preferred": true
-                }
-            ]
+            "shasum": ""
         },
         "require": {
             "php": ">=5.3.9"
@@ -381,13 +351,7 @@
             "type": "zip",
             "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/82ebae02209c21113908c229e9883c419720738a",
             "reference": "82ebae02209c21113908c229e9883c419720738a",
-            "shasum": "",
-            "mirrors": [
-                {
-                    "url": "https://dl.laravel-china.org/%package%/%reference%.%type%",
-                    "preferred": true
-                }
-            ]
+            "shasum": ""
         },
         "require": {
             "php": ">=5.3.3"
@@ -447,13 +411,7 @@
             "type": "zip",
             "url": "https://api.github.com/repos/top-think/framework/zipball/05eecd121d18d6705aaa10aa44fcdf7c14da4d0b",
             "reference": "05eecd121d18d6705aaa10aa44fcdf7c14da4d0b",
-            "shasum": "",
-            "mirrors": [
-                {
-                    "url": "https://dl.laravel-china.org/%package%/%reference%.%type%",
-                    "preferred": true
-                }
-            ]
+            "shasum": ""
         },
         "require": {
             "php": ">=5.6.0",
@@ -506,13 +464,7 @@
             "type": "zip",
             "url": "https://api.github.com/repos/top-think/think-installer/zipball/f5400a12c60e513911aef41fe443fa6920952675",
             "reference": "f5400a12c60e513911aef41fe443fa6920952675",
-            "shasum": "",
-            "mirrors": [
-                {
-                    "url": "https://dl.laravel-china.org/%package%/%reference%.%type%",
-                    "preferred": true
-                }
-            ]
+            "shasum": ""
         },
         "require": {
             "composer-plugin-api": "^1.0"

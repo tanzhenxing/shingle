@@ -100,7 +100,7 @@
             }, search: function (e) {
                 e.off("keypress").on("keypress", function (a) {
                     if (this.value.replace(/\s/g, "") && 13 === a.keyCode) {
-                        var i = e.attr("lay-action"), t = e.attr("lay-text") || "搜索";
+                        var i = e.attr("lay-action"), t = e.attr("lay-text") || "Search";
                         i += this.value, t = t + ' <span style="color: #FF5722;">' + P.escape(this.value) + "</span>", layui.index.openTabsPage(i, t), F.search.keys || (F.search.keys = {}), F.search.keys[P.tabsPage.index] = this.value, this.value === F.search.keys[P.tabsPage.index] && F.refresh(e), this.value = ""
                     }
                 })
