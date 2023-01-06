@@ -1,1 +1,0 @@
-import{_ as e,c as t,o as s,a}from"./app.9c69d8d6.js";const h=JSON.parse('{"title":"","description":"","frontmatter":{},"headers":[],"relativePath":"index.md"}'),o={name:"index.md"},n=a("p",null,"'# hello vitepress '",-1),r=[n];function c(d,i,_,p,l,m){return s(),t("div",null,r)}const u=e(o,[["render",c]]);export{h as __pageData,u as default};
