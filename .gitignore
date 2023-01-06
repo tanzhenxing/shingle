@@ -1,6 +1,7 @@
 /.idea
 /.vscode
+/.history
+/node_modules
 *.log
 .env
 .DS_Store
-/public/upload
